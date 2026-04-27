@@ -7,11 +7,34 @@ import { courses } from './data/coursesData'
 const guilds = ['Fire Guild', 'Water Guild', 'Earth Guild', 'Air Guild']
 const saveKey = 'gms-cyber-hall-profile'
 const stepAmount = 2.5
+
+const mapSoundtracks = {
+  overworld: 'https://pub-b0ec57f6cb694b719d48d1d2cce31f9b.r2.dev/Overworld%201%20demo.mp3',
+  hall: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/Sweet%20Grass%20Braid.wav',
+  civilx: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/Quartz%20Memory%202.mp3',
+  fireTemple: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/Breath%20Of%20Fire%20Remix_Master_V1.wav',
+  waterTemple: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/waterremix.wav',
+  earthTemple: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/tribal%20trance.mp3',
+  airTemple: 'https://pub-b0ec57f6cb694b719d48d1d2cce31f9b.r2.dev/Overworld%201%20demo.mp3',
+  courses: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/itch%20the%20glitch%202.wav'
+}
+
 const onboardingGuildVisuals = {
   'Fire Guild': 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/icons/icon-fire-rounded.png',
   'Water Guild': 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/icons/icon-water-round.png',
   'Earth Guild': 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/icons/icon-earth-round.png',
   'Air Guild': 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/icons/icon-air-round.png'
+}
+
+const guildCharacterSprites = {
+  'Water Guild': {
+    idle: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/water/character-water-idle.png',
+    walking: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/water/character-water-walking.png',
+    back: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/water/character-water-back.png'
+  },
+  'Fire Guild': null,
+  'Earth Guild': null,
+  'Air Guild': null
 }
 
 const mapDefinitions = {
@@ -150,11 +173,17 @@ function App() {
   const [bookingSubmitting, setBookingSubmitting] = useState(false)
   const [bookingStatus, setBookingStatus] = useState('')
   const [trackUnavailable, setTrackUnavailable] = useState(false)
+  const [characterDirection, setCharacterDirection] = useState('down')
+  const [characterMoving, setCharacterMoving] = useState(false)
+  const [backgroundMusicUnlocked, setBackgroundMusicUnlocked] = useState(false)
   const audioRef = useRef(null)
   const shouldAutoplayOnTrackChangeRef = useRef(false)
   const clickAudioRef = useRef(null)
   const welcomeAudioRef = useRef(null)
   const backgroundMusicRef = useRef(null)
+  const movementTimeoutRef = useRef(null)
+  const backgroundMusicTimesRef = useRef({})
+  const activeSoundtrackKeyRef = useRef('overworld')
 
   const currentMapDef = mapDefinitions[currentMap]
 
@@ -246,8 +275,34 @@ function App() {
     }
     setStep(2)
   }
-
+  const unlockBackgroundMusic = () => {
+    if (backgroundMusicUnlocked || !backgroundMusicRef.current) return
+  
+    setBackgroundMusicUnlocked(true)
+    backgroundMusicRef.current.play().catch(() => {})
+  }
   const movePlayer = (dx, dy) => {
+    unlockBackgroundMusic()
+  
+    // Set direction based on movement
+    if (dy < 0) setCharacterDirection('up')
+    if (dy > 0) setCharacterDirection('down')
+    if (dx < 0) setCharacterDirection('left')
+    if (dx > 0) setCharacterDirection('right')
+  
+    // Trigger movement animation
+    setCharacterMoving(true)
+  
+    // Reset movement after short delay (so idle kicks in)
+    if (movementTimeoutRef.current) {
+      clearTimeout(movementTimeoutRef.current)
+    }
+  
+    movementTimeoutRef.current = setTimeout(() => {
+      setCharacterMoving(false)
+    }, 180)
+  
+    // Move player (UNCHANGED logic)
     setPlayerPosition((prev) => ({
       x: clamp(prev.x + dx, 4, 96),
       y: clamp(prev.y + dy, 4, 96)
@@ -319,10 +374,14 @@ function App() {
 
     if (action === 'view') {
       const overlay = openHallOverlayByNodeId(node.id)
-      if (currentMap === 'hall' && overlay) {
+      if (overlay) {
+        if (currentMap !== 'hall') {
+          setCurrentMap('hall')
+          setPlayerPosition({ x: 50, y: 52 })
+        }
         setHallOverlay(overlay)
       }
-
+    
       setActiveSection(node.name)
     }
 
@@ -459,11 +518,10 @@ function App() {
     clickAudioRef.current.volume = 0.11
     welcomeAudioRef.current = new Audio('https://pub-b0ec57f6cb694b719d48d1d2cce31f9b.r2.dev/welcome.mp3')
     welcomeAudioRef.current.preload = 'auto'
-    backgroundMusicRef.current = new Audio('https://pub-b0ec57f6cb694b719d48d1d2cce31f9b.r2.dev/Overworld%201%20demo.mp3')
+    backgroundMusicRef.current = new Audio(mapSoundtracks.overworld)
     backgroundMusicRef.current.loop = true
     backgroundMusicRef.current.volume = 0.1
     backgroundMusicRef.current.preload = 'auto'
-    backgroundMusicRef.current.play().catch(() => {})
 
     const handleGlobalClickSound = (event) => {
       const clickTarget = event.target.closest('button, a, [role="button"]')
@@ -485,15 +543,37 @@ function App() {
 
   useEffect(() => {
     if (!backgroundMusicRef.current) return
-
-    const shouldPauseForMusicHallPlayback = hallOverlay === 'music' && isTrackPlaying
-    if (shouldPauseForMusicHallPlayback) {
+  
+    const activeSoundtrackKey = hallOverlay === 'courses' ? 'courses' : currentMap
+    const nextSoundtrack = mapSoundtracks[activeSoundtrackKey] || mapSoundtracks.overworld
+    const shouldPauseForMediaPlayback = hallOverlay === 'music' && isTrackPlaying
+  
+    const previousSoundtrackKey = activeSoundtrackKeyRef.current
+  
+    if (previousSoundtrackKey !== activeSoundtrackKey) {
+      backgroundMusicTimesRef.current[previousSoundtrackKey] =
+        backgroundMusicRef.current.currentTime || 0
+  
+      backgroundMusicRef.current.pause()
+      backgroundMusicRef.current.src = nextSoundtrack
+      backgroundMusicRef.current.currentTime =
+        backgroundMusicTimesRef.current[activeSoundtrackKey] || 0
+      backgroundMusicRef.current.load()
+  
+      activeSoundtrackKeyRef.current = activeSoundtrackKey
+    }
+  
+    if (shouldPauseForMediaPlayback) {
+      backgroundMusicTimesRef.current[activeSoundtrackKey] =
+        backgroundMusicRef.current.currentTime || 0
       backgroundMusicRef.current.pause()
       return
     }
-
-    backgroundMusicRef.current.play().catch(() => {})
-  }, [hallOverlay, isTrackPlaying, step])
+  
+    if (step === 4 && backgroundMusicUnlocked) {
+      backgroundMusicRef.current.play().catch(() => {})
+    }
+  }, [currentMap, hallOverlay, isTrackPlaying, step, backgroundMusicUnlocked])
 
 
   useEffect(() => {
@@ -519,6 +599,24 @@ function App() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [step, nearbyLocation, dialogueNode])
+
+  const activeCharacterSprites = guildCharacterSprites[guild] || guildCharacterSprites['Water Guild']
+
+  const activeCharacterImage =
+    characterDirection === 'up'
+      ? activeCharacterSprites?.back
+      : characterMoving
+        ? activeCharacterSprites?.walking
+        : activeCharacterSprites?.idle
+
+  const characterFacingClass =
+    characterDirection === 'left'
+      ? 'facing-left'
+      : characterDirection === 'right'
+        ? 'facing-right'
+        : characterDirection === 'up'
+          ? 'facing-up'
+          : 'facing-down'
 
   return (
     <div className={`app-shell arcade-screen ${step < 4 ? 'onboarding-mode' : ''}`}>
@@ -628,7 +726,7 @@ function App() {
       )}
 
       {step === 4 && (
-        <section className="arcade-panel world-panel">
+        <section className="arcade-panel world-panel" onClick={unlockBackgroundMusic}>
           <button className="arcade-button nav-toggle" onClick={() => setNavOpen((value) => !value)}>
             {navOpen ? 'Hide Navigation' : 'Show Navigation'}
           </button>
@@ -686,9 +784,17 @@ function App() {
                 </button>
               ))}
 
-              <div className="player-avatar" style={{ left: `${playerPosition.x}%`, top: `${playerPosition.y}%` }}>
-                <span className="player-core" />
-              </div>
+<div
+  className={`player-avatar character-avatar ${characterFacingClass} ${characterMoving ? 'is-moving' : 'is-idle'}`}
+  style={{ left: `${playerPosition.x}%`, top: `${playerPosition.y}%` }}
+  aria-label={`${name || 'Player'} — ${guild || 'Water Guild'}`}
+>
+  {activeCharacterImage ? (
+    <img src={activeCharacterImage} alt="" aria-hidden="true" />
+  ) : (
+    <span className="player-core" />
+  )}
+</div>
 
               {nearbyLocation && !dialogueNode && (
                 <button className="enter-prompt arcade-button" onClick={() => openDialogue(nearbyLocation)}>
