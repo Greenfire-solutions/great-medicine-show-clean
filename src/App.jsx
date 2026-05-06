@@ -41,12 +41,72 @@ const mapDefinitions = {
   overworld: {
     title: 'Overworld Map',
     nodes: [
-      { id: 'hall', name: 'Hall of Great Works', x: 50, y: 48, tone: 'hall', type: 'map', targetMap: 'hall' },
-      { id: 'civilx', name: 'CivilX Lab', x: 84, y: 28, tone: 'lab', type: 'map', targetMap: 'civilx' },
-      { id: 'fire', name: 'Fire Temple', x: 20, y: 22, tone: 'fire', type: 'map', targetMap: 'fireTemple' },
-      { id: 'water', name: 'Water Temple', x: 80, y: 20, tone: 'water', type: 'map', targetMap: 'waterTemple' },
-      { id: 'earth', name: 'Earth Temple', x: 20, y: 78, tone: 'earth', type: 'map', targetMap: 'earthTemple' },
-      { id: 'air', name: 'Air Temple', x: 80, y: 78, tone: 'air', type: 'map', targetMap: 'airTemple' },
+      {
+        id: 'hall',
+        name: 'Hall of Great Works',
+        x: 48,
+        y: 49,
+        tone: 'hall',
+        type: 'map',
+        targetMap: 'hall',
+        imageUrl: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/hall-of-great-works/hall-of-great-work2.png',
+        imageClass: 'hall-building-node'
+      },
+      {
+        id: 'civilx',
+        name: 'CivilX Lab',
+        x: 90,
+        y: 50,
+        tone: 'lab',
+        type: 'map',
+        targetMap: 'civilxLab',
+        imageUrl: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/civilx-lab/civilx-lab.png',
+        imageClass: 'civilx-lab-node'
+      },
+      {
+        id: 'fire',
+        name: 'Fire Temple',
+        x: 13,
+        y: 20,
+        tone: 'fire',
+        type: 'map',
+        targetMap: 'fireTemple',
+        imageUrl: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/fire/Temple-fire.png',
+        imageClass: 'fire-temple-node'
+      },
+      {
+        id: 'water',
+        name: 'Water Temple',
+        x: 84,
+        y: 10,
+        tone: 'water',
+        type: 'map',
+        targetMap: 'waterTemple',
+        imageUrl: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/water/Temple-water.png',
+        imageClass: 'water-temple-node'
+      },
+      {
+        id: 'earth',
+        name: 'Earth Temple',
+        x: 13,
+        y: 70,
+        tone: 'earth',
+        type: 'map',
+        targetMap: 'earthTemple',
+        imageUrl: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/earth/Temple-earth.png',
+        imageClass: 'earth-temple-node'
+      },
+      {
+        id: 'air',
+        name: 'Air Temple',
+        x: 76,
+        y: 78,
+        tone: 'air',
+        type: 'map',
+        targetMap: 'airTemple',
+        imageUrl: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/air/Temple-air.png',
+        imageClass: 'air-temple-node'
+      },
       { id: 'course', name: 'Course Academy', x: 50, y: 10, tone: 'courses', type: 'page' }
     ]
   },
@@ -621,11 +681,12 @@ function App() {
   return (
     <div className={`app-shell arcade-screen ${step < 4 ? 'onboarding-mode' : ''}`}>
       {step === 4 && (
-        <header className="arcade-panel banner">
-          <p className="kicker">Great Medicine Show RPG</p>
-          <h1 className="glyph-title">Hall of Great Works</h1>
-          <div className="glowing-divider" />
-        </header>
+       <header className="game-title-banner" aria-label="The Great Medicine Show">
+       <img
+         src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/banners/title-banner-header.png"
+         alt="The Great Medicine Show"
+       />
+     </header>
       )}
 
       {step === 1 && (
@@ -732,22 +793,25 @@ function App() {
           </button>
 
           <aside className={`sidebar arcade-panel ${navOpen ? 'open' : ''}`}>
-            <h3 className="glyph-title">Map Navigation</h3>
-            <div className="glowing-divider" />
-            <p className="small">Current: {currentMapDef.title}</p>
-            {currentMapDef.nodes.map((section) => (
-              <button
-                key={section.id}
-                className={`arcade-button linkish ${activeSection === section.name ? 'selected' : ''}`}
-                onClick={() => {
-                  navigateToNode(section)
-                  setNavOpen(false)
-                }}
-              >
-                {section.name}
-              </button>
-            ))}
-          </aside>
+  <div className="arcade-panel-inner">
+    <h3 className="glyph-title">Map Navigation</h3>
+    <div className="glowing-divider" />
+    <p className="small">Current: {currentMapDef.title}</p>
+
+    {currentMapDef.nodes.map((section) => (
+      <button
+        key={section.id}
+        className={`arcade-button linkish ${activeSection === section.name ? 'selected' : ''}`}
+        onClick={() => {
+          navigateToNode(section)
+          setNavOpen(false)
+        }}
+      >
+        ✦ {section.name}
+      </button>
+    ))}
+  </div>
+</aside>
 
           <div className="world-content">
             <div className="status-line">
@@ -759,30 +823,33 @@ function App() {
             <h2 className="glyph-title">{currentMapDef.title}</h2>
             <div className="glowing-divider" />
 
-            <div className={`rpg-map ${currentMap === 'hall' ? 'map-hall' : ''}`} role="group" aria-label="2D RPG world map">
-              <div className="terrain terrain-forest" />
-              <div className="terrain terrain-ruins" />
-              <div className="terrain terrain-water" />
-              <div className="path-line path-main" />
-              <div className="path-line path-cross" />
-              {currentMap === 'hall' && (
-                <>
-                  <div className="hall-lane hall-lane-left" />
-                  <div className="hall-lane hall-lane-right" />
-                  <div className="hall-crystal" />
-                </>
-              )}
+            <div className={`rpg-map map-brightness-layer ${currentMap === 'hall' ? 'map-hall' : ''}`} role="group" aria-label="2D RPG world map">
+            {currentMap !== 'hall' && (
+  <>
+    <div className="terrain terrain-forest" />
+    <div className="terrain terrain-ruins" />
+    <div className="terrain terrain-water" />
 
-              {currentMapDef.nodes.map((location) => (
-                <button
-                  key={location.id}
-                  className={`map-node temple-card tone-${location.tone} ${activeSection === location.name ? 'selected' : ''}`}
-                  style={{ left: `${location.x}%`, top: `${location.y}%`, transform: 'translate(-50%, -50%)' }}
-                  onClick={() => openDialogue(location)}
-                >
-                  <span className="node-label">{location.name}</span>
-                </button>
-              ))}
+  </>
+)}
+
+{currentMapDef.nodes.map((location) => {
+  const hasImage = Boolean(location.imageUrl)
+
+  return (
+    <button
+      key={location.id}
+      className={`map-node temple-card tone-${location.tone} ${hasImage ? `image-map-node ${location.imageClass || ''}` : ''} ${activeSection === location.name ? 'selected' : ''}`}
+      style={{ left: `${location.x}%`, top: `${location.y}%`, transform: 'translate(-50%, -50%)' }}
+      onClick={() => openDialogue(location)}
+    >
+      {hasImage && (
+        <img className="map-node-image" src={location.imageUrl} alt="" aria-hidden="true" />
+      )}
+      <span className="node-label">{location.name}</span>
+    </button>
+  )
+})}
 
 <div
   className={`player-avatar character-avatar ${characterFacingClass} ${characterMoving ? 'is-moving' : 'is-idle'}`}
