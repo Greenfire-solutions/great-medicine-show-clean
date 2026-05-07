@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { musicData } from './data/musicData'
 import { storeItems } from './data/storeData'
 import { upcomingShows, bookingOffers } from './data/showsData'
@@ -225,6 +225,10 @@ const hallShortcuts = {
   courses: { overlay: 'courses', section: 'Courses Portal' }
 }
 
+const mobileMapCameraMql = '(max-width: 700px)'
+const MOBILE_RPG_MAP_WIDTH = 900
+const MOBILE_RPG_MAP_HEIGHT = 620
+
 const getSavedProfile = () => {
   try {
     const value = localStorage.getItem(saveKey)
@@ -264,6 +268,8 @@ function App() {
   const [characterMoving, setCharacterMoving] = useState(false)
   const [backgroundMusicUnlocked, setBackgroundMusicUnlocked] = useState(false)
   const [epkOpen, setEpkOpen] = useState(false)
+  const [isMobileMapView, setIsMobileMapView] = useState(false)
+  const [mapCameraViewportSize, setMapCameraViewportSize] = useState({ w: 0, h: 0 })
   const audioRef = useRef(null)
   const shouldAutoplayOnTrackChangeRef = useRef(false)
   const clickAudioRef = useRef(null)
@@ -272,6 +278,7 @@ function App() {
   const movementTimeoutRef = useRef(null)
   const backgroundMusicTimesRef = useRef({})
   const activeSoundtrackKeyRef = useRef('overworld')
+  const mapCameraViewportRef = useRef(null)
 
   const currentMapDef = mapDefinitions[currentMap]
 
@@ -694,6 +701,31 @@ function App() {
   }, [epkOpen])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia(mobileMapCameraMql)
+    const sync = () => setIsMobileMapView(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  useLayoutEffect(() => {
+    if (step !== 4) return undefined
+    const element = mapCameraViewportRef.current
+    if (!element) return undefined
+    const updateSize = () => {
+      setMapCameraViewportSize({
+        w: Math.round(element.clientWidth),
+        h: Math.round(element.clientHeight)
+      })
+    }
+    updateSize()
+    const observer = new ResizeObserver(updateSize)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [step, isMobileMapView])
+
+  useEffect(() => {
     if (step !== 4) return
 
     const handleKeyDown = (event) => {
@@ -735,6 +767,48 @@ function App() {
         : characterDirection === 'up'
           ? 'facing-up'
           : 'facing-down'
+
+  const mapInteriorBackgroundClass =
+    currentMap === 'hall'
+      ? 'map-hall'
+      : currentMap === 'fireTemple'
+        ? 'map-fire-temple'
+        : currentMap === 'waterTemple'
+          ? 'map-water-temple'
+          : currentMap === 'earthTemple'
+            ? 'map-earth-temple'
+            : currentMap === 'airTemple'
+              ? 'map-air-temple'
+              : ''
+
+  const showMapTerrainDecor =
+    currentMap !== 'hall' &&
+    currentMap !== 'fireTemple' &&
+    currentMap !== 'waterTemple' &&
+    currentMap !== 'earthTemple' &&
+    currentMap !== 'airTemple'
+
+  const mobileRpgMapCameraStyle = useMemo(() => {
+    if (!isMobileMapView) return undefined
+    const vw = mapCameraViewportSize.w
+    const vh = mapCameraViewportSize.h
+    if (vw <= 0 || vh <= 0) return undefined
+
+    const mw = MOBILE_RPG_MAP_WIDTH
+    const mh = MOBILE_RPG_MAP_HEIGHT
+    const playerPixelX = (playerPosition.x / 100) * mw
+    const playerPixelY = (playerPosition.y / 100) * mh
+    const camMinX = Math.min(0, vw - mw)
+    const camMaxX = Math.max(0, vw - mw)
+    const camMinY = Math.min(0, vh - mh)
+    const camMaxY = Math.max(0, vh - mh)
+    const cameraX = clamp(vw / 2 - playerPixelX, camMinX, camMaxX)
+    const cameraY = clamp(vh / 2 - playerPixelY, camMinY, camMaxY)
+
+    return {
+      transform: `translate(${cameraX}px, ${cameraY}px)`
+    }
+  }, [isMobileMapView, mapCameraViewportSize.w, mapCameraViewportSize.h, playerPosition.x, playerPosition.y])
 
   return (
     <div className={`app-shell arcade-screen ${step < 4 ? 'onboarding-mode' : ''}`}>
@@ -928,8 +1002,14 @@ function App() {
             <h2 className="glyph-title">{currentMapDef.title}</h2>
             <div className="glowing-divider" />
 
-            <div className={`rpg-map map-brightness-layer ${currentMap === 'hall' ? 'map-hall' : ''}`} role="group" aria-label="2D RPG world map">
-            {currentMap !== 'hall' && (
+            <div ref={mapCameraViewportRef} className="map-camera-viewport">
+              <div
+                className={`rpg-map map-brightness-layer ${mapInteriorBackgroundClass}`}
+                role="group"
+                aria-label="2D RPG world map"
+                style={mobileRpgMapCameraStyle}
+              >
+            {showMapTerrainDecor && (
   <>
     <div className="terrain terrain-forest" />
     <div className="terrain terrain-ruins" />
@@ -1017,6 +1097,7 @@ function App() {
                   </div>
                 </div>
               )}
+              </div>
             </div>
 
             <div className="mobile-controls" aria-label="Map movement controls">

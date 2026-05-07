@@ -1082,6 +1082,46 @@ input:focus-visible {
   opacity: 0.2;
 }
 
+.map-fire-temple {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/fire/fire-temple-interior.png');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.map-water-temple {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/water/water-temple-interior.png');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.map-earth-temple {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/earth/earth-temple-interior.png');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.map-air-temple {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/air/air-temple-interior.png');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 .hall-lane {
   position: absolute;
   top: 16%;
@@ -1822,6 +1862,11 @@ input:focus-visible {
   box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.45);
 }
 
+.map-camera-viewport {
+  width: 100%;
+  position: relative;
+}
+
 .status-line {
   gap: 0.5rem;
   margin-bottom: 0.75rem;
@@ -2051,10 +2096,32 @@ input:focus-visible {
     font-size: 0.6rem;
     line-height: 1.15;
   }
-}/* === OVERWORLD MAP IMAGE LAYER === */
+}
+
+@media (max-width: 700px) {
+  .map-camera-viewport {
+    overflow: hidden;
+    height: 72vh;
+    max-height: 720px;
+    border-radius: 14px;
+  }
+
+  .map-camera-viewport .rpg-map {
+    width: 900px;
+    max-width: none;
+    height: 620px;
+    min-height: 620px;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    transform-origin: top left;
+  }
+}
+
+/* === OVERWORLD MAP IMAGE LAYER === */
 
 /* Only apply to overworld */
-.rpg-map:not(.map-hall) {
+.rpg-map:not(.map-hall):not(.map-fire-temple):not(.map-water-temple):not(.map-earth-temple):not(.map-air-temple) {
   background:
     url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/overworld/new-overworld-base-map.png');
 
@@ -2065,7 +2132,7 @@ input:focus-visible {
 }
 
 /* Subtle dark vignette for readability */
-.rpg-map:not(.map-hall)::after {
+.rpg-map:not(.map-hall):not(.map-fire-temple):not(.map-water-temple):not(.map-earth-temple):not(.map-air-temple)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -2226,7 +2293,7 @@ input:focus-visible {
 }/* === MAP BRIGHTNESS FIX === */
 
 
-.rpg-map.map-brightness-layer:not(.map-hall)::after {
+.rpg-map.map-brightness-layer:not(.map-hall):not(.map-fire-temple):not(.map-water-temple):not(.map-earth-temple):not(.map-air-temple)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -2275,6 +2342,46 @@ input:focus-visible {
   background:
     linear-gradient(rgba(5, 8, 12, 0.04), rgba(5, 8, 12, 0.1)),
     url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/hall-of-great-works/hall-of-great-work-floor.png') !important;
+
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.rpg-map.map-fire-temple {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/fire/fire-temple-interior.png') !important;
+
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.rpg-map.map-water-temple {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/water/water-temple-interior.png') !important;
+
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.rpg-map.map-earth-temple {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/earth/earth-temple-interior.png') !important;
+
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.rpg-map.map-air-temple {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/air/air-temple-interior.png') !important;
 
   background-size: cover !important;
   background-position: center !important;
