@@ -22,8 +22,22 @@ export const epkContact = {
 
 export const epkContent = {
   tagline: 'EDM / BASS PRODUCER',
-  bio:
-    'Emerging from the bass/EDM scene, The Great Medicine Show brings primal rhythms and unforgettable stage energy. All original music. With 40,000 monthly Spotify listeners and zero paid promotion, the project has built a dedicated following through raw sound, high-frequency intention, and explosive live shows.',
+  bio: `There are still places left outside the machinery of culture — temporary zones where art, sound, myth, and human communion begin dissolving the hallucination of modern life.
+
+Great Medicine Show moves through that territory.
+
+Emerging from the bass and electronic underground, the project has quietly built a devoted following through purely organic reach — over 40,000 monthly Spotify listeners with no paid promotion, no manufactured campaigns, no algorithmic theater. Only original music, primal rhythm, and unforgettable live energy carried mouth to mouth, city to city, soul to soul.
+
+Not as entertainment, but as signal. A kind of living transmission. Bass frequencies, firelight, strange symbols, ancient memory, future dreaming — all braided together into an atmosphere that feels less invented than remembered.
+
+Conversations deepen.
+Time loosens.
+Something dormant in the imagination begins breathing again.
+
+
+this is an invitation into the felt mystery of being alive — a reminder that beneath algorithms, concrete, and endless repetition, the human spirit still longs for awe, initiation, beauty, tribe, risk, and the unscripted encounter with the unknown.
+
+Somewhere between forest ritual and neon futurism, Great Medicine Show keeps that door open.`,
   bullets: [
     {
       title: 'Sound',

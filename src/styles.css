@@ -13,6 +13,9 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --pad-app: clamp(0.35rem, 2.2vw, 0.55rem);
+
+  /* UI dark texture surface layer — inner panel fill only (never replaces frames/borders) */
+  --ui-dark-texture: url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/backgrounds/bacground-dark.png');
 }
 
 * {
@@ -177,6 +180,16 @@ input {
   gap: 0.35rem;
   justify-items: center;
   transform: translateY(12px);
+  padding: 0.45rem 0.55rem;
+  border-radius: 12px;
+  background-color: rgba(5, 10, 16, 0.55);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.62), rgba(3, 4, 7, 0.78)),
+    var(--ui-dark-texture),
+    linear-gradient(180deg, rgba(5, 10, 16, 0.35), rgba(5, 10, 16, 0.52));
+  background-size: auto, cover, auto;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .name-input-content label,
@@ -199,7 +212,14 @@ input {
   padding: 0.45rem;
   border-radius: 14px;
   border: 1px solid rgba(120, 229, 255, 0.2);
-  background: rgba(255, 255, 255, 0.02);
+  background-color: rgba(4, 8, 14, 0.95);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.58), rgba(3, 4, 7, 0.74)),
+    var(--ui-dark-texture),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+  background-size: auto, cover, auto;
+  background-position: center;
+  background-repeat: no-repeat;
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
@@ -360,11 +380,328 @@ input {
   justify-content: center;
   position: relative;
   padding: 0.35rem 0;
+  isolation: isolate;
 }
 
 .onboarding-space-screen::before,
 .onboarding-space-screen::after {
   content: none;
+}
+
+/* Onboarding only: layered galaxy backdrop (steps 1–3); stays behind frames and UI */
+.onboarding-cosmos {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(ellipse 120% 100% at 50% 115%, rgba(12, 8, 32, 0.95), #000010 72%);
+  perspective: clamp(900px, 140vw, 2200px);
+  perspective-origin: 50% 42%;
+}
+
+.onboarding-cosmos-3d {
+  position: absolute;
+  inset: -32% -18% -38% -18%;
+  transform-style: preserve-3d;
+  will-change: transform;
+  animation: onboardingCosmosCruise 200s linear infinite alternate;
+}
+
+.cosmos-nebula {
+  position: absolute;
+  inset: -35% -28% -40% -28%;
+  z-index: 0;
+  opacity: 0.62;
+  transform: translateZ(-720px) scale(2);
+  transform-style: preserve-3d;
+  background:
+    radial-gradient(ellipse 85% 60% at 18% 28%, rgba(96, 64, 200, 0.55), transparent 58%),
+    radial-gradient(ellipse 75% 55% at 82% 18%, rgba(38, 120, 220, 0.42), transparent 52%),
+    radial-gradient(ellipse 68% 70% at 48% 88%, rgba(180, 80, 140, 0.22), transparent 55%),
+    radial-gradient(ellipse 120% 90% at 55% -5%, rgba(30, 50, 120, 0.45), transparent 40%),
+    radial-gradient(circle at 66% 40%, rgba(255, 255, 255, 0.04), transparent 45%);
+  filter: saturate(112%) brightness(104%);
+  animation: cosmosNebulaSheen 380s linear infinite alternate;
+}
+
+.cosmos-galaxy-band {
+  position: absolute;
+  inset: -20% -30%;
+  transform-style: preserve-3d;
+  border-radius: 50%;
+  filter: blur(28px);
+  opacity: 0.32;
+}
+
+.cosmos-galaxy-band-back {
+  z-index: 1;
+  transform: translateZ(-560px) scale(2.05) rotate(-12deg);
+  background:
+    radial-gradient(
+      ellipse 95% 18% at 50% 38%,
+      rgba(138, 198, 255, 0.35),
+      rgba(76, 40, 120, 0.12),
+      transparent 70%
+    );
+  animation: cosmosBandSweep 440s linear infinite;
+}
+
+.cosmos-galaxy-band-mid {
+  z-index: 1;
+  transform: translateZ(-280px) scale(1.45) rotate(8deg);
+  filter: blur(18px);
+  opacity: 0.38;
+  background:
+    radial-gradient(
+      ellipse 88% 12% at 42% 55%,
+      rgba(236, 220, 255, 0.28),
+      rgba(60, 100, 200, 0.15),
+      transparent 72%
+    );
+  animation: cosmosBandSweepReverse 290s linear infinite;
+}
+
+.cosmos-starfield-tile {
+  position: absolute;
+  inset: -62% -40% -72% -40%;
+  z-index: 2;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  background-repeat: repeat;
+  mix-blend-mode: screen;
+}
+
+.cosmos-starfield-tile-far {
+  opacity: 0.35;
+  transform: translateZ(-380px) scale(1.7);
+  background-size: 208px 208px;
+  background-image:
+    radial-gradient(1px 1px at 4% 7%, rgba(255, 255, 255, 0.9), transparent 1.1px),
+    radial-gradient(1px 1px at 31% 12%, rgba(220, 244, 255, 0.55), transparent 1px),
+    radial-gradient(0.85px 0.85px at 73% 5%, rgba(255, 255, 255, 0.45), transparent 1px),
+    radial-gradient(1px 1px at 19% 31%, rgba(255, 255, 255, 0.35), transparent 1px),
+    radial-gradient(1.1px 1.1px at 58% 24%, rgba(255, 255, 255, 0.75), transparent 1.3px),
+    radial-gradient(0.95px 0.95px at 88% 29%, rgba(200, 230, 255, 0.4), transparent 1px),
+    radial-gradient(1px 1px at 46% 44%, rgba(255, 255, 255, 0.62), transparent 1.3px),
+    radial-gradient(0.85px 0.85px at 13% 48%, rgba(255, 255, 255, 0.45), transparent 1px),
+    radial-gradient(1px 1px at 93% 47%, rgba(255, 255, 255, 0.5), transparent 1.2px),
+    radial-gradient(1px 1px at 27% 66%, rgba(255, 255, 255, 0.38), transparent 1px),
+    radial-gradient(1.05px 1.05px at 69% 58%, rgba(240, 250, 255, 0.65), transparent 1.25px),
+    radial-gradient(0.95px 0.95px at 8% 78%, rgba(255, 255, 255, 0.42), transparent 1px),
+    radial-gradient(1px 1px at 83% 72%, rgba(255, 255, 255, 0.55), transparent 1.2px),
+    radial-gradient(1px 1px at 41% 88%, rgba(255, 255, 255, 0.36), transparent 1px),
+    radial-gradient(0.95px 0.95px at 55% 18%, rgba(255, 255, 255, 0.4), transparent 1px),
+    radial-gradient(1px 1px at 74% 88%, rgba(220, 240, 255, 0.48), transparent 1.15px),
+    radial-gradient(0.95px 0.95px at 36% 9%, rgba(255, 255, 255, 0.5), transparent 1.1px),
+    radial-gradient(1px 1px at 50% 70%, rgba(255, 255, 255, 0.32), transparent 1px),
+    radial-gradient(0.95px 0.95px at 22% 90%, rgba(255, 255, 255, 0.4), transparent 1px),
+    radial-gradient(1px 1px at 96% 64%, rgba(255, 255, 255, 0.36), transparent 1px),
+    radial-gradient(0.95px 0.95px at 65% 40%, rgba(255, 255, 255, 0.28), transparent 1px),
+    radial-gradient(1.1px 1.1px at 11% 58%, rgba(255, 255, 255, 0.65), transparent 1.35px),
+    radial-gradient(0.95px 0.95px at 44% 2%, rgba(255, 255, 255, 0.35), transparent 1px);
+  animation: cosmosTileDriftSlow 950s linear infinite alternate;
+}
+
+.cosmos-starfield-tile-mid {
+  opacity: 0.45;
+  transform: translateZ(-220px) scale(1.35);
+  background-size: 176px 176px;
+  background-image:
+    radial-gradient(1.1px 1.1px at 7% 11%, rgba(255, 255, 255, 0.88), transparent 1.35px),
+    radial-gradient(0.95px 0.95px at 28% 6%, rgba(255, 255, 255, 0.45), transparent 1.05px),
+    radial-gradient(1px 1px at 92% 8%, rgba(255, 255, 255, 0.5), transparent 1.25px),
+    radial-gradient(0.95px 0.95px at 16% 24%, rgba(220, 240, 255, 0.55), transparent 1.05px),
+    radial-gradient(1.15px 1.15px at 63% 19%, rgba(255, 255, 255, 0.78), transparent 1.38px),
+    radial-gradient(0.95px 0.95px at 81% 22%, rgba(255, 255, 255, 0.4), transparent 1.15px),
+    radial-gradient(1px 1px at 51% 35%, rgba(255, 255, 255, 0.6), transparent 1.35px),
+    radial-gradient(0.95px 0.95px at 5% 38%, rgba(255, 255, 255, 0.42), transparent 1.1px),
+    radial-gradient(1.05px 1.05px at 94% 36%, rgba(255, 255, 255, 0.58), transparent 1.38px),
+    radial-gradient(0.95px 0.95px at 37% 57%, rgba(255, 255, 255, 0.34), transparent 1.05px),
+    radial-gradient(1.1px 1.1px at 71% 48%, rgba(255, 255, 255, 0.72), transparent 1.4px),
+    radial-gradient(1px 1px at 12% 68%, rgba(255, 255, 255, 0.38), transparent 1.2px),
+    radial-gradient(1.05px 1.05px at 54% 78%, rgba(255, 255, 255, 0.5), transparent 1.25px),
+    radial-gradient(0.95px 0.95px at 86% 71%, rgba(255, 255, 255, 0.4), transparent 1.1px),
+    radial-gradient(1px 1px at 24% 93%, rgba(255, 255, 255, 0.45), transparent 1.35px),
+    radial-gradient(0.95px 0.95px at 48% 4%, rgba(255, 255, 255, 0.42), transparent 1.05px),
+    radial-gradient(1.1px 1.1px at 79% 86%, rgba(255, 255, 255, 0.8), transparent 1.42px),
+    radial-gradient(0.95px 0.95px at 33% 44%, rgba(255, 255, 255, 0.3), transparent 1px),
+    radial-gradient(1px 1px at 96% 52%, rgba(255, 255, 255, 0.45), transparent 1.38px),
+    radial-gradient(0.95px 0.95px at 18% 84%, rgba(255, 255, 255, 0.4), transparent 1.08px),
+    radial-gradient(1.05px 1.05px at 61% 6%, rgba(255, 255, 255, 0.48), transparent 1.42px),
+    radial-gradient(0.95px 0.95px at 44% 88%, rgba(255, 255, 255, 0.32), transparent 1px),
+    radial-gradient(1px 1px at 73% 64%, rgba(255, 255, 255, 0.28), transparent 1.15px),
+    radial-gradient(1px 1px at 6% 56%, rgba(255, 255, 255, 0.7), transparent 1.42px),
+    radial-gradient(0.95px 0.95px at 56% 14%, rgba(255, 255, 255, 0.35), transparent 1.05px);
+  animation: cosmosTileDriftMid 620s linear infinite alternate-reverse;
+}
+
+.cosmos-starfield-tile-near {
+  opacity: 0.5;
+  transform: translateZ(-90px) scale(1.12);
+  background-size: 152px 152px;
+  background-image:
+    radial-gradient(1.2px 1.2px at 9% 9%, rgba(255, 255, 255, 0.95), transparent 1.45px),
+    radial-gradient(1px 1px at 92% 12%, rgba(255, 255, 255, 0.55), transparent 1.3px),
+    radial-gradient(1.15px 1.15px at 47% 3%, rgba(210, 240, 255, 0.6), transparent 1.42px),
+    radial-gradient(1px 1px at 26% 22%, rgba(255, 255, 255, 0.72), transparent 1.42px),
+    radial-gradient(1.15px 1.15px at 68% 28%, rgba(255, 255, 255, 0.48), transparent 1.42px),
+    radial-gradient(1px 1px at 13% 44%, rgba(255, 255, 255, 0.4), transparent 1.42px),
+    radial-gradient(1.25px 1.25px at 84% 39%, rgba(255, 255, 255, 0.88), transparent 1.52px),
+    radial-gradient(1px 1px at 53% 51%, rgba(255, 255, 255, 0.5), transparent 1.45px),
+    radial-gradient(1.05px 1.05px at 6% 62%, rgba(255, 255, 255, 0.45), transparent 1.42px),
+    radial-gradient(1.2px 1.2px at 34% 79%, rgba(255, 255, 255, 0.75), transparent 1.54px),
+    radial-gradient(1px 1px at 71% 66%, rgba(255, 255, 255, 0.42), transparent 1.52px),
+    radial-gradient(1.1px 1.1px at 89% 88%, rgba(255, 255, 255, 0.6), transparent 1.62px),
+    radial-gradient(1px 1px at 52% 95%, rgba(255, 255, 255, 0.4), transparent 1.62px),
+    radial-gradient(1.15px 1.15px at 21% 7%, rgba(255, 255, 255, 0.38), transparent 1.62px),
+    radial-gradient(1px 1px at 58% 18%, rgba(255, 255, 255, 0.62), transparent 1.72px),
+    radial-gradient(0.98px 0.98px at 77% 55%, rgba(255, 255, 255, 0.32), transparent 1.82px),
+    radial-gradient(1.2px 1.2px at 41% 34%, rgba(255, 255, 255, 0.7), transparent 1.92px),
+    radial-gradient(1px 1px at 94% 70%, rgba(255, 255, 255, 0.45), transparent 1.82px),
+    radial-gradient(1.1px 1.1px at 16% 90%, rgba(255, 255, 255, 0.5), transparent 1.92px),
+    radial-gradient(1px 1px at 63% 12%, rgba(255, 255, 255, 0.35), transparent 1.72px),
+    radial-gradient(1.15px 1.15px at 39% 60%, rgba(255, 255, 255, 0.45), transparent 1.92px),
+    radial-gradient(1px 1px at 8% 30%, rgba(255, 255, 255, 0.8), transparent 1.92px),
+    radial-gradient(1px 1px at 97% 40%, rgba(255, 255, 255, 0.38), transparent 1.72px),
+    radial-gradient(1.1px 1.1px at 31% 50%, rgba(255, 255, 255, 0.35), transparent 1.92px),
+    radial-gradient(1px 1px at 85% 6%, rgba(255, 255, 255, 0.6), transparent 1.92px);
+  animation: cosmosTileDriftNear 410s linear infinite alternate;
+}
+
+.onboarding-cosmos .starfield {
+  z-index: 3;
+}
+
+.cosmos-twinkle-sheet {
+  position: absolute;
+  inset: -20% -10% -30% -10%;
+  z-index: 4;
+  transform: translateZ(-40px) scale(1.05);
+  transform-style: preserve-3d;
+  pointer-events: none;
+  background:
+    radial-gradient(1px 1px at 12% 20%, rgba(255, 255, 255, 0.5), transparent 1px),
+    radial-gradient(1px 1px at 38% 8%, rgba(255, 255, 255, 0.35), transparent 1px),
+    radial-gradient(1px 1px at 88% 32%, rgba(255, 255, 255, 0.4), transparent 1px),
+    radial-gradient(1px 1px at 71% 18%, rgba(255, 255, 255, 0.28), transparent 1px),
+    radial-gradient(1px 1px at 24% 75%, rgba(255, 255, 255, 0.32), transparent 1px),
+    radial-gradient(1px 1px at 93% 80%, rgba(255, 255, 255, 0.38), transparent 1px);
+  background-repeat: repeat;
+  background-size: min(520px, 120vw) min(620px, 160vh);
+  opacity: 0.22;
+  mix-blend-mode: screen;
+  animation: cosmosTwinkle 11s ease-in-out infinite alternate;
+}
+
+@keyframes onboardingCosmosCruise {
+  0% {
+    transform: translate3d(0, 3vh, 0) rotateX(6deg);
+  }
+  100% {
+    transform: translate3d(-1.25vw, -4.5vh, 0) rotateX(11deg);
+  }
+}
+
+@keyframes cosmosNebulaSheen {
+  0% {
+    filter: saturate(112%) brightness(103%) hue-rotate(0deg);
+  }
+  100% {
+    filter: saturate(125%) brightness(116%) hue-rotate(18deg);
+  }
+}
+
+@keyframes cosmosBandSweep {
+  0% {
+    transform: translateZ(-560px) scale(2.08) rotate(-12deg) translate3d(-4%, 2%, 0);
+  }
+  100% {
+    transform: translateZ(-560px) scale(2.2) rotate(-9deg) translate3d(5%, -3%, 0);
+  }
+}
+
+@keyframes cosmosBandSweepReverse {
+  0% {
+    transform: translateZ(-280px) scale(1.42) rotate(8deg) translate3d(3%, -2%, 0);
+  }
+  100% {
+    transform: translateZ(-280px) scale(1.52) rotate(11deg) translate3d(-4%, 4%, 0);
+  }
+}
+
+@keyframes cosmosTileDriftSlow {
+  0% {
+    transform: translateZ(-380px) scale(1.7) translate3d(2vw, -4vh, 0);
+    opacity: 0.34;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateZ(-180px) scale(1.95) translate3d(-12vw, 18vh, 0);
+    opacity: 0.36;
+  }
+}
+
+@keyframes cosmosTileDriftMid {
+  0% {
+    transform: translateZ(-220px) scale(1.34) translate3d(-1vw, 2vh, 0);
+    opacity: 0.43;
+  }
+  55% {
+    opacity: 0.52;
+  }
+  100% {
+    transform: translateZ(-80px) scale(1.55) translate3d(10vw, -14vh, 0);
+    opacity: 0.44;
+  }
+}
+
+@keyframes cosmosTileDriftNear {
+  0% {
+    transform: translateZ(-90px) scale(1.1) translate3d(4vw, 5vh, 0);
+    opacity: 0.48;
+  }
+  40% {
+    opacity: 0.58;
+  }
+  100% {
+    transform: translateZ(40px) scale(1.28) translate3d(-8vw, -12vh, 0);
+    opacity: 0.5;
+  }
+}
+
+@keyframes cosmosTwinkle {
+  0% {
+    opacity: 0.08;
+    transform: translateZ(-40px) scale(1.04) rotate(0deg);
+  }
+  100% {
+    opacity: 0.28;
+    transform: translateZ(-40px) scale(1.08) rotate(0.08deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-cosmos-3d,
+  .cosmos-nebula,
+  .cosmos-galaxy-band-back,
+  .cosmos-galaxy-band-mid,
+  .cosmos-starfield-tile-far,
+  .cosmos-starfield-tile-mid,
+  .cosmos-starfield-tile-near,
+  .cosmos-twinkle-sheet {
+    animation: none !important;
+  }
+
+  .onboarding-cosmos .starfield::before {
+    animation: none !important;
+  }
+
+  .onboarding-cosmos-3d {
+    transform: translate3d(0, 0, 0) rotateX(8deg);
+  }
 }
 
 .starfield {
@@ -522,6 +859,14 @@ input {
   justify-content: center;
   overflow: visible;
   border-radius: 14px;
+  background-color: rgba(5, 10, 16, 0.55);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.62), rgba(3, 4, 7, 0.78)),
+    var(--ui-dark-texture),
+    linear-gradient(180deg, rgba(6, 12, 18, 0.45), rgba(6, 12, 18, 0.62));
+  background-size: auto, cover, auto;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .onboarding-space-screen .guild-icon-button img {
@@ -581,6 +926,17 @@ input {
   justify-items: stretch;
   min-height: 0;
   overflow: auto;
+  padding: clamp(0.45rem, 1.8vw, 0.85rem);
+  border-radius: 12px;
+  box-sizing: border-box;
+  background-color: rgba(4, 10, 18, 0.55);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.58), rgba(3, 4, 7, 0.76)),
+    var(--ui-dark-texture),
+    linear-gradient(180deg, rgba(4, 10, 18, 0.22), rgba(4, 10, 18, 0.38));
+  background-size: auto, cover, auto;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .name-form-panel label,
@@ -592,6 +948,114 @@ input {
   width: 100%;
   max-width: 460px;
   margin: 0;
+  box-sizing: border-box;
+}
+
+/* Desktop onboarding (≥721px): align UI with ornate frame aperture; frame-art uses contain so inner ornament is narrower than shell */
+@media (min-width: 721px) {
+  .onboarding-frame-shell {
+    padding-inline: clamp(3rem, 9vmin, 6.75rem);
+    padding-block: clamp(2.95rem, 6.25vmin, 5rem) clamp(3rem, 5.85vmin, 5rem);
+  }
+
+  .onboarding-frame-shell .guild-content-layer {
+    justify-items: center;
+    width: 100%;
+    max-width: 100%;
+    gap: clamp(0.55rem, 2vh, 1.05rem);
+  }
+
+  .onboarding-frame-shell .glyph-title.onboarding-title {
+    justify-self: center;
+    margin: 0;
+    max-width: min(560px, 94%);
+    text-align: center;
+    padding: 0.6rem clamp(16px, 2.5vw, 28px) 0.4rem;
+    box-sizing: border-box;
+    line-height: 1.22;
+  }
+
+  .onboarding-frame-shell .element-grid {
+    margin-inline: auto;
+    width: 100%;
+    max-width: min(408px, 88%);
+    column-gap: clamp(0.35rem, 1.1vw, 0.72rem);
+    row-gap: clamp(0.4rem, 1.3vh, 0.82rem);
+  }
+
+  .onboarding-frame-shell .element-card {
+    max-width: 100%;
+    min-width: 0;
+    min-height: unset;
+    height: auto;
+    padding: clamp(4px, 0.6vw, 8px);
+  }
+
+  .onboarding-frame-shell .guild-icon-button img {
+    width: min(64px, 15vw);
+    height: auto;
+    max-height: 64px;
+  }
+
+  .onboarding-frame-shell .element-label-button {
+    margin-top: 6px;
+    width: min(100px, 100%);
+    max-width: 100%;
+    height: 28px;
+  }
+
+  .onboarding-frame-shell .element-label-button span {
+    font-size: clamp(10px, 1.85vw, 12px);
+  }
+
+  .onboarding-frame-shell .guild-content-layer > .onboarding-continue {
+    margin-top: 0.5rem;
+  }
+
+  .onboarding-frame-shell .name-content-layer {
+    justify-items: center;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .onboarding-frame-shell .name-form-panel {
+    place-self: center;
+    width: 100%;
+    max-width: min(356px, 86%);
+    margin-inline: auto;
+    justify-items: center;
+    padding-inline: clamp(12px, 2vw, 20px);
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .onboarding-frame-shell .name-form-panel label,
+  .onboarding-frame-shell .name-form-panel .small {
+    width: 100%;
+    justify-self: center;
+    padding-inline: 0.35rem;
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  .onboarding-frame-shell .name-form-panel input {
+    justify-self: center;
+    margin-block: 0.15rem;
+    margin-inline: 0;
+    width: 100%;
+    max-width: min(298px, 100%);
+    text-align: center;
+  }
+
+  .onboarding-frame-shell .name-form-panel input::placeholder {
+    text-align: center;
+  }
+
+  .onboarding-frame-shell .name-form-panel .onboarding-continue {
+    justify-self: center;
+    margin-inline: auto;
+    margin-block-start: 0.35rem;
+  }
 }
 
 
@@ -688,15 +1152,21 @@ input {
   border-top: 0;
 }
 
+/* UI dark texture surface layer */
 .arcade-panel {
   position: relative;
   border: 1px solid rgba(120, 229, 255, 0.4);
   border-radius: 14px;
   padding: 0.8rem;
   margin-bottom: 0.65rem;
-  background:
+  background-color: var(--bg-panel);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.58), rgba(3, 4, 7, 0.72)),
     linear-gradient(180deg, rgba(16, 37, 47, 0.86), rgba(12, 26, 35, 0.9)),
-    var(--bg-panel);
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     inset 0 0 0 1px rgba(235, 212, 131, 0.12),
     0 0 24px rgba(58, 194, 176, 0.22);
@@ -784,7 +1254,14 @@ p {
   border-radius: 9px;
   padding: 0.56rem 0.95rem;
   color: var(--text-main);
-  background: linear-gradient(180deg, rgba(19, 61, 69, 0.94), rgba(10, 32, 38, 0.98));
+  background-color: rgba(10, 32, 38, 0.98);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.42), rgba(3, 4, 7, 0.55)),
+    linear-gradient(180deg, rgba(19, 61, 69, 0.94), rgba(10, 32, 38, 0.98)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, 180px 180px;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     inset 0 0 0 1px rgba(235, 212, 131, 0.15),
     0 0 0 1px rgba(120, 229, 255, 0.16);
@@ -849,7 +1326,14 @@ p {
 .arcade-button:hover,
 .arcade-button.selected {
   border-color: var(--line-gold);
-  background: linear-gradient(180deg, rgba(31, 77, 82, 0.95), rgba(14, 40, 46, 0.99));
+  background-color: rgba(14, 40, 46, 0.99);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.42), rgba(3, 4, 7, 0.55)),
+    linear-gradient(180deg, rgba(31, 77, 82, 0.95), rgba(14, 40, 46, 0.99)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, 180px 180px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .arcade-button:disabled {
@@ -1131,6 +1615,26 @@ input:focus-visible {
   background-repeat: no-repeat;
 }
 
+.map-civilx-lab {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/civilx-lab/civilx-lab-inerior.png');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.map-course-academy {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/course/course-academy-interior.png');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 .hall-lane {
   position: absolute;
   top: 16%;
@@ -1247,8 +1751,15 @@ input:focus-visible {
   padding: 0.7rem;
   border-radius: 12px;
   border: 2px solid rgba(235, 212, 131, 0.7);
-  background: rgba(8, 19, 26, 0.94);
   box-shadow: 0 0 18px rgba(120, 229, 255, 0.25);
+  background-color: rgba(5, 12, 18, 0.96);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.62), rgba(3, 4, 7, 0.78)),
+    linear-gradient(180deg, rgba(8, 19, 26, 0.88), rgba(8, 19, 26, 0.94)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .dialogue-bubble p {
@@ -1290,7 +1801,14 @@ input:focus-visible {
   position: relative;
   z-index: 7;
   margin-bottom: 0.8rem;
-  background: linear-gradient(180deg, rgba(18, 16, 34, 0.95), rgba(10, 19, 29, 0.97));
+  background-color: rgba(10, 16, 26, 0.96);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.48), rgba(3, 4, 7, 0.62)),
+    linear-gradient(180deg, rgba(18, 16, 34, 0.95), rgba(10, 19, 29, 0.97)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .music-shell {
@@ -1307,7 +1825,14 @@ input:focus-visible {
   display: grid;
   place-items: center;
   color: var(--text-soft);
-  background: rgba(22, 34, 54, 0.7);
+  background-color: rgba(8, 14, 28, 0.82);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.45), rgba(3, 4, 7, 0.62)),
+    var(--ui-dark-texture),
+    linear-gradient(180deg, rgba(22, 34, 54, 0.62), rgba(22, 34, 54, 0.78));
+  background-size: auto, cover, auto;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .music-controls,
@@ -1325,7 +1850,14 @@ input:focus-visible {
   margin-bottom: 0.55rem;
   min-height: 90px;
   color: var(--text-soft);
-  background: rgba(8, 22, 31, 0.65);
+  background-color: rgba(4, 14, 22, 0.82);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.48), rgba(3, 4, 7, 0.62)),
+    var(--ui-dark-texture),
+    linear-gradient(180deg, rgba(8, 22, 31, 0.58), rgba(8, 22, 31, 0.74));
+  background-size: auto, cover, auto;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .overlay-image {
@@ -1359,12 +1891,19 @@ input:focus-visible {
   margin-bottom: 0.55rem;
 }
 
+/* UI dark texture surface layer */
 .library-controls input,
 .library-controls select {
   width: 100%;
   border-radius: 8px;
   border: 1px solid rgba(120, 229, 255, 0.35);
-  background: rgba(10, 18, 29, 0.95);
+  background-color: rgba(10, 18, 29, 0.95);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.55), rgba(3, 4, 7, 0.72)),
+    var(--ui-dark-texture);
+  background-size: auto, 160px 160px;
+  background-position: center;
+  background-repeat: no-repeat;
   color: var(--text-main);
   padding: 0.45rem;
 }
@@ -1377,6 +1916,7 @@ input:focus-visible {
 }
 
 
+/* UI dark texture surface layer */
 .playlist-row {
   width: 100%;
   display: grid;
@@ -1386,7 +1926,13 @@ input:focus-visible {
   text-align: left;
   border: 1px solid rgba(120, 229, 255, 0.25);
   border-radius: 8px;
-  background: rgba(8, 22, 31, 0.72);
+  background-color: rgba(8, 22, 31, 0.72);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.5), rgba(3, 4, 7, 0.65)),
+    var(--ui-dark-texture);
+  background-size: auto, 160px 160px;
+  background-position: center;
+  background-repeat: no-repeat;
   color: var(--text-main);
   padding: 0.45rem;
   cursor: pointer;
@@ -1400,7 +1946,13 @@ input:focus-visible {
 
 .playlist-row.selected {
   border-color: rgba(120, 229, 255, 0.85);
-  background: rgba(27, 56, 74, 0.85);
+  background-color: rgba(27, 56, 74, 0.85);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.42), rgba(3, 4, 7, 0.58)),
+    var(--ui-dark-texture);
+  background-size: auto, 160px 160px;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow: inset 0 0 0 1px rgba(120, 229, 255, 0.35);
 }
 
@@ -1416,12 +1968,19 @@ input:focus-visible {
   margin-bottom: 0.6rem;
 }
 
+/* UI dark texture surface layer */
 .business-controls input,
 .business-controls select {
   width: 100%;
   border-radius: 8px;
   border: 1px solid rgba(120, 229, 255, 0.35);
-  background: rgba(10, 18, 29, 0.95);
+  background-color: rgba(10, 18, 29, 0.95);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.55), rgba(3, 4, 7, 0.72)),
+    var(--ui-dark-texture);
+  background-size: auto, 160px 160px;
+  background-position: center;
+  background-repeat: no-repeat;
   color: var(--text-main);
   padding: 0.45rem;
 }
@@ -1437,7 +1996,14 @@ input:focus-visible {
   border: 1px solid rgba(120, 229, 255, 0.34);
   border-radius: 10px;
   padding: 0.6rem;
-  background: rgba(9, 23, 33, 0.7);
+  background-color: rgba(5, 14, 22, 0.85);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.52), rgba(3, 4, 7, 0.68)),
+    var(--ui-dark-texture),
+    linear-gradient(180deg, rgba(9, 23, 33, 0.72), rgba(9, 23, 33, 0.88));
+  background-size: auto, cover, auto;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .overlay-card h4 {
@@ -1457,7 +2023,14 @@ input:focus-visible {
   border: 1px solid rgba(120, 229, 255, 0.3);
   border-radius: 12px;
   padding: 0.6rem;
-  background: rgba(8, 20, 32, 0.72);
+  background-color: rgba(4, 12, 22, 0.88);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.52), rgba(3, 4, 7, 0.68)),
+    var(--ui-dark-texture),
+    linear-gradient(180deg, rgba(8, 20, 32, 0.68), rgba(8, 20, 32, 0.82));
+  background-size: auto, cover, auto;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .show-flyer {
@@ -1522,12 +2095,19 @@ input:focus-visible {
   margin-bottom: 0.7rem;
 }
 
+/* UI dark texture surface layer */
 .booking-grid textarea {
   grid-column: 1 / -1;
   min-height: 110px;
   border-radius: 8px;
   border: 1px solid rgba(120, 229, 255, 0.35);
-  background: rgba(10, 18, 29, 0.95);
+  background-color: rgba(10, 18, 29, 0.95);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.55), rgba(3, 4, 7, 0.72)),
+    var(--ui-dark-texture);
+  background-size: auto, 160px 160px;
+  background-position: center;
+  background-repeat: no-repeat;
   color: var(--text-main);
   padding: 0.45rem;
 }
@@ -1541,11 +2121,18 @@ input:focus-visible {
   font-size: 0.92rem;
 }
 
+/* UI dark texture surface layer */
 .status-line span {
   padding: 0.25rem 0.55rem;
   border: 1px solid rgba(120, 229, 255, 0.28);
   border-radius: 999px;
-  background: rgba(11, 30, 39, 0.8);
+  background-color: rgba(11, 30, 39, 0.8);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.42), rgba(3, 4, 7, 0.58)),
+    var(--ui-dark-texture);
+  background-size: auto, 140px 140px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .section-panel {
@@ -1782,9 +2369,18 @@ input:focus-visible {
     box-sizing: border-box;
   }
 
-  .name-form-panel input {
-    max-width: 100%;
+  .onboarding-frame-shell .name-form-panel input {
+    justify-self: center;
+    width: min(100%, calc(100% - 1.5rem));
+    max-width: min(288px, 86%);
+    min-width: 0;
+    margin: 0;
+    text-align: center;
     box-sizing: border-box;
+  }
+
+  .onboarding-frame-shell .name-form-panel input::placeholder {
+    text-align: center;
   }
 
 }
@@ -2015,11 +2611,19 @@ input:focus-visible {
   }
 
   .onboarding-frame-shell .name-form-panel input {
-    max-width: 100%;
-    width: 100%;
+    justify-self: center;
+    width: min(100%, calc(100% - 1.5rem));
+    max-width: min(288px, 86%);
+    min-width: 0;
+    margin: 0;
     box-sizing: border-box;
     font-size: clamp(0.78rem, 3.25vw, 0.92rem);
     line-height: 1.35;
+    text-align: center;
+  }
+
+  .onboarding-frame-shell .name-form-panel input::placeholder {
+    text-align: center;
   }
 
   .onboarding-frame-shell .name-form-panel .small {
@@ -2075,18 +2679,30 @@ input:focus-visible {
   grid-template-columns: 240px minmax(0, 1fr);
   gap: 1rem;
   padding: 1rem;
-  background:
+  border-color: rgba(214, 168, 82, 0.42);
+  background-color: rgba(4, 7, 10, 0.98);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.38), rgba(3, 4, 7, 0.52)),
     radial-gradient(circle at 82% 14%, rgba(96, 54, 143, 0.22), transparent 32%),
     radial-gradient(circle at 16% 84%, rgba(80, 98, 52, 0.18), transparent 35%),
-    linear-gradient(180deg, rgba(12, 10, 11, 0.96), rgba(4, 7, 10, 0.98));
-  border-color: rgba(214, 168, 82, 0.42);
+    linear-gradient(180deg, rgba(12, 10, 11, 0.96), rgba(4, 7, 10, 0.98)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .sidebar {
   border-color: rgba(214, 168, 82, 0.45);
-  background:
+  background-color: rgba(8, 10, 11, 0.98);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.48), rgba(3, 4, 7, 0.62)),
     linear-gradient(180deg, rgba(20, 17, 15, 0.97), rgba(8, 10, 11, 0.98)),
-    radial-gradient(circle at 50% 0%, rgba(102, 54, 143, 0.2), transparent 40%);
+    radial-gradient(circle at 50% 0%, rgba(102, 54, 143, 0.2), transparent 40%),
+    var(--ui-dark-texture);
+  background-size: auto, auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     inset 0 0 0 1px rgba(255, 226, 151, 0.08),
     0 0 22px rgba(0, 0, 0, 0.45);
@@ -2103,7 +2719,13 @@ input:focus-visible {
   border: 1px solid rgba(214, 168, 82, 0.22);
   border-radius: 10px;
   padding: 0.55rem;
-  background: rgba(0, 0, 0, 0.22);
+  background-color: rgba(0, 0, 0, 0.28);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.45), rgba(3, 4, 7, 0.62)),
+    var(--ui-dark-texture);
+  background-size: auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .sidebar .linkish {
@@ -2111,8 +2733,14 @@ input:focus-visible {
   min-height: 44px;
   padding: 0.6rem 0.7rem;
   border-color: rgba(214, 168, 82, 0.28);
-  background:
-    linear-gradient(180deg, rgba(32, 28, 24, 0.92), rgba(13, 15, 16, 0.96));
+  background-color: rgba(13, 15, 16, 0.96);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.48), rgba(3, 4, 7, 0.62)),
+    linear-gradient(180deg, rgba(32, 28, 24, 0.92), rgba(13, 15, 16, 0.96)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, 220px 220px;
+  background-position: center;
+  background-repeat: no-repeat;
   color: #f1ddb0;
   letter-spacing: 0.015em;
   transition:
@@ -2132,8 +2760,14 @@ input:focus-visible {
 .sidebar .linkish.selected {
   transform: translateX(3px);
   border-color: rgba(242, 197, 99, 0.86);
-  background:
-    linear-gradient(180deg, rgba(62, 42, 75, 0.92), rgba(25, 21, 26, 0.98));
+  background-color: rgba(25, 21, 26, 0.98);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.52), rgba(3, 4, 7, 0.68)),
+    linear-gradient(180deg, rgba(62, 42, 75, 0.92), rgba(25, 21, 26, 0.98)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, 220px 220px;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     inset 0 0 0 1px rgba(255, 226, 151, 0.18),
     0 0 14px rgba(138, 82, 202, 0.22);
@@ -2143,9 +2777,15 @@ input:focus-visible {
   border: 1px solid rgba(214, 168, 82, 0.28);
   border-radius: 16px;
   padding: 0.9rem;
-  background:
-    linear-gradient(180deg, rgba(9, 11, 12, 0.86), rgba(5, 8, 10, 0.94));
   box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.45);
+  background-color: rgba(5, 8, 10, 0.94);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.52), rgba(3, 4, 7, 0.68)),
+    linear-gradient(180deg, rgba(9, 11, 12, 0.86), rgba(5, 8, 10, 0.94)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .map-camera-viewport {
@@ -2161,8 +2801,14 @@ input:focus-visible {
 .status-line span {
   border-radius: 4px;
   border-color: rgba(214, 168, 82, 0.38);
-  background:
-    linear-gradient(180deg, rgba(51, 36, 49, 0.92), rgba(15, 17, 18, 0.96));
+  background-color: rgba(15, 17, 18, 0.96);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.48), rgba(3, 4, 7, 0.62)),
+    linear-gradient(180deg, rgba(51, 36, 49, 0.92), rgba(15, 17, 18, 0.96)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, 160px 160px;
+  background-position: center;
+  background-repeat: no-repeat;
   color: #f2d58e;
   text-transform: uppercase;
   font-size: 0.78rem;
@@ -2288,15 +2934,27 @@ input:focus-visible {
 .enter-prompt {
   z-index: 8;
   border-color: rgba(242, 197, 99, 0.85);
-  background:
-    linear-gradient(180deg, rgba(69, 42, 83, 0.96), rgba(20, 18, 21, 0.98));
+  background-color: rgba(20, 18, 21, 0.98);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.52), rgba(3, 4, 7, 0.68)),
+    linear-gradient(180deg, rgba(69, 42, 83, 0.96), rgba(20, 18, 21, 0.98)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: #ffe9a9;
 }
 
 .dialogue-bubble {
   border-color: rgba(242, 197, 99, 0.86);
-  background:
-    linear-gradient(180deg, rgba(31, 25, 31, 0.98), rgba(8, 10, 12, 0.98));
+  background-color: rgba(8, 10, 12, 0.98);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.62), rgba(3, 4, 7, 0.76)),
+    linear-gradient(180deg, rgba(31, 25, 31, 0.98), rgba(8, 10, 12, 0.98)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     inset 0 0 0 1px rgba(255, 226, 151, 0.12),
     0 0 24px rgba(116, 72, 168, 0.26),
@@ -2305,8 +2963,14 @@ input:focus-visible {
 
 .section-panel {
   border-color: rgba(214, 168, 82, 0.34);
-  background:
-    linear-gradient(180deg, rgba(18, 16, 17, 0.96), rgba(8, 10, 12, 0.98));
+  background-color: rgba(8, 10, 12, 0.98);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.58), rgba(3, 4, 7, 0.72)),
+    linear-gradient(180deg, rgba(18, 16, 17, 0.96), rgba(8, 10, 12, 0.98)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .section-panel .arcade-copy {
@@ -2315,8 +2979,14 @@ input:focus-visible {
 
 .mobile-controls .arcade-button {
   border-color: rgba(214, 168, 82, 0.55);
-  background:
-    linear-gradient(180deg, rgba(39, 33, 30, 0.96), rgba(12, 14, 15, 0.98));
+  background-color: rgba(12, 14, 15, 0.98);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.52), rgba(3, 4, 7, 0.66)),
+    linear-gradient(180deg, rgba(39, 33, 30, 0.96), rgba(12, 14, 15, 0.98)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, 180px 180px;
+  background-position: center;
+  background-repeat: no-repeat;
   color: #f3ddb0;
 }
 
@@ -2579,7 +3249,7 @@ input:focus-visible {
 }/* === MAP BRIGHTNESS FIX === */
 
 
-.rpg-map.map-brightness-layer:not(.map-hall):not(.map-fire-temple):not(.map-water-temple):not(.map-earth-temple):not(.map-air-temple)::after {
+.rpg-map.map-brightness-layer:not(.map-hall):not(.map-fire-temple):not(.map-water-temple):not(.map-earth-temple):not(.map-air-temple):not(.map-course-academy)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -2623,7 +3293,25 @@ input:focus-visible {
 
 .civilx-lab-node .node-label {
   bottom: 10px;
-}/* === FORCE HALL INTERIOR BACKGROUND === */
+}
+
+.course-academy-node {
+  width: clamp(170px, 18.5vw, 278px);
+  height: clamp(176px, 19vw, 352px);
+  max-width: none;
+}
+
+.course-academy-node img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.course-academy-node .node-label {
+  bottom: 10px;
+}
+/* === FORCE HALL INTERIOR BACKGROUND === */
 .rpg-map.map-hall {
   background:
     linear-gradient(rgba(5, 8, 12, 0.04), rgba(5, 8, 12, 0.1)),
@@ -2672,14 +3360,42 @@ input:focus-visible {
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
-}.arcade-panel {
+}
+
+.rpg-map.map-civilx-lab {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/civilx-lab/civilx-lab-inerior.png') !important;
+
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.rpg-map.map-course-academy {
+  background:
+    linear-gradient(rgba(5, 8, 12, 0.08), rgba(5, 8, 12, 0.18)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/course/course-academy-interior.png') !important;
+
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.arcade-panel {
   position: relative;
   border: 2px solid rgba(235, 212, 131, 0.38);
   border-radius: 10px;
   padding: 0.8rem;
   margin-bottom: 0.65rem;
-  background:
-    linear-gradient(180deg, rgba(5, 5, 7, 0.96), rgba(2, 2, 4, 0.98));
+  background-color: rgba(2, 2, 4, 0.98);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.62), rgba(3, 4, 7, 0.76)),
+    linear-gradient(180deg, rgba(5, 5, 7, 0.96), rgba(2, 2, 4, 0.98)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     inset 0 0 0 1px rgba(122, 75, 255, 0.22),
     inset 0 0 24px rgba(0, 0, 0, 0.9),
@@ -2711,7 +3427,13 @@ input:focus-visible {
   margin: 0;
   padding: 0;
   border: none;
-  background: transparent;
+  background-color: #03060d;
+  background-image:
+    linear-gradient(rgba(3, 4, 7, 0.38), rgba(3, 4, 7, 0.52)),
+    url('https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/banners/header-baackground.png');
+  background-position: center center, center center;
+  background-repeat: no-repeat, no-repeat;
+  background-size: cover, cover;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -2757,7 +3479,14 @@ input:focus-visible {
   padding: 0.45rem 0.55rem;
   border-radius: 10px;
   border: 1px solid rgba(120, 229, 255, 0.28);
-  background: linear-gradient(90deg, rgba(8, 14, 22, 0.92), rgba(18, 12, 32, 0.88));
+  background-color: rgba(18, 12, 32, 0.88);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.42), rgba(3, 4, 7, 0.58)),
+    linear-gradient(90deg, rgba(8, 14, 22, 0.92), rgba(18, 12, 32, 0.88)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     inset 0 0 0 1px rgba(122, 75, 255, 0.12),
     0 0 18px rgba(122, 75, 255, 0.08);
@@ -2781,7 +3510,14 @@ input:focus-visible {
   border-radius: 999px;
   border: 1px solid rgba(120, 229, 255, 0.38);
   color: rgba(245, 248, 255, 0.95);
-  background: linear-gradient(180deg, rgba(28, 48, 62, 0.75), rgba(12, 22, 34, 0.92));
+  background-color: rgba(12, 22, 34, 0.92);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.38), rgba(3, 4, 7, 0.52)),
+    linear-gradient(180deg, rgba(28, 48, 62, 0.75), rgba(12, 22, 34, 0.92)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, 180px 180px;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     0 0 12px rgba(58, 120, 160, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -2809,18 +3545,34 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
+/* UI dark texture surface layer */
 .site-top-bar-btn.is-active {
   border-color: rgba(186, 140, 255, 0.85);
   color: #fff;
-  background: linear-gradient(180deg, rgba(72, 42, 120, 0.55), rgba(28, 18, 48, 0.9));
+  background-color: rgba(28, 18, 48, 0.9);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.42), rgba(3, 4, 7, 0.55)),
+    linear-gradient(180deg, rgba(72, 42, 120, 0.55), rgba(28, 18, 48, 0.9)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, 180px 180px;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     0 0 18px rgba(122, 75, 255, 0.35),
     inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
+/* UI dark texture surface layer */
 .site-top-bar-btn--epk {
   border-color: rgba(171, 136, 246, 0.55);
-  background: linear-gradient(180deg, rgba(90, 52, 160, 0.5), rgba(40, 22, 72, 0.88));
+  background-color: rgba(40, 22, 72, 0.88);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.38), rgba(3, 4, 7, 0.52)),
+    linear-gradient(180deg, rgba(90, 52, 160, 0.5), rgba(40, 22, 72, 0.88)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, 180px 180px;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     0 0 14px rgba(122, 75, 255, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -2837,9 +3589,17 @@ input:focus-visible {
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
+/* UI dark texture surface layer */
 .site-top-bar-btn--epk.is-active {
   border-color: rgba(250, 220, 144, 0.55);
-  background: linear-gradient(180deg, rgba(110, 72, 38, 0.45), rgba(42, 28, 18, 0.9));
+  background-color: rgba(42, 28, 18, 0.9);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.42), rgba(3, 4, 7, 0.55)),
+    linear-gradient(180deg, rgba(110, 72, 38, 0.45), rgba(42, 28, 18, 0.9)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, 180px 180px;
+  background-position: center;
+  background-repeat: no-repeat;
   box-shadow:
     0 0 18px rgba(250, 220, 144, 0.22),
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
@@ -2893,8 +3653,14 @@ input:focus-visible {
   max-height: none;
   padding: 0.72rem 0.82rem 0.85rem;
   border-color: rgba(171, 136, 246, 0.42);
-  background:
-    linear-gradient(165deg, rgba(12, 8, 22, 0.97) 0%, rgba(6, 10, 18, 0.98) 45%, rgba(8, 14, 24, 0.97) 100%);
+  background-color: rgba(8, 14, 24, 0.97);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.52), rgba(3, 4, 7, 0.68)),
+    linear-gradient(165deg, rgba(12, 8, 22, 0.97) 0%, rgba(6, 10, 18, 0.98) 45%, rgba(8, 14, 24, 0.97) 100%),
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .epk-toolbar {
@@ -2980,10 +3746,18 @@ input:focus-visible {
   filter: drop-shadow(0 0 12px rgba(122, 75, 255, 0.35));
 }
 
+/* UI dark texture surface layer */
 .epk-bio {
   padding: 0.68rem 0.82rem;
   border-radius: 12px;
-  background: linear-gradient(145deg, rgba(72, 32, 120, 0.92), rgba(42, 18, 86, 0.94));
+  background-color: rgba(42, 18, 86, 0.94);
+  background-image:
+    linear-gradient(180deg, rgba(3, 4, 7, 0.48), rgba(3, 4, 7, 0.62)),
+    linear-gradient(145deg, rgba(72, 32, 120, 0.92), rgba(42, 18, 86, 0.94)),
+    var(--ui-dark-texture);
+  background-size: auto, auto, cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border: 1px solid rgba(186, 140, 255, 0.35);
   box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
 }

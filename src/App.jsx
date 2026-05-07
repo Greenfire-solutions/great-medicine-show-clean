@@ -16,14 +16,34 @@ const guilds = ['Fire Guild', 'Water Guild', 'Earth Guild', 'Air Guild']
 const saveKey = 'gms-cyber-hall-profile'
 const stepAmount = 2.5
 
+function OnboardingCosmosBackground() {
+  return (
+    <div className="onboarding-cosmos" aria-hidden="true">
+      <div className="onboarding-cosmos-3d">
+        <div className="cosmos-nebula" />
+        <div className="cosmos-galaxy-band cosmos-galaxy-band-back" />
+        <div className="cosmos-galaxy-band cosmos-galaxy-band-mid" />
+        <div className="cosmos-starfield-tile cosmos-starfield-tile-far" />
+        <div className="cosmos-starfield-tile cosmos-starfield-tile-mid" />
+        <div className="cosmos-starfield-tile cosmos-starfield-tile-near" />
+        <div className="starfield starfield-one" />
+        <div className="starfield starfield-two" />
+        <div className="starfield starfield-three" />
+        <div className="cosmos-twinkle-sheet" />
+      </div>
+    </div>
+  )
+}
+
 const mapSoundtracks = {
   overworld: 'https://pub-b0ec57f6cb694b719d48d1d2cce31f9b.r2.dev/Overworld%201%20demo.mp3',
   hall: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/Sweet%20Grass%20Braid.wav',
-  civilx: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/Quartz%20Memory%202.mp3',
+  civilxLab: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/Quartz%20Memory%202.mp3',
   fireTemple: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/Breath%20Of%20Fire%20Remix_Master_V1.wav',
   waterTemple: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/waterremix.wav',
   earthTemple: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/tribal%20trance.mp3',
   airTemple: 'https://pub-b0ec57f6cb694b719d48d1d2cce31f9b.r2.dev/Overworld%201%20demo.mp3',
+  courseAcademy: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/itch%20the%20glitch%202.wav',
   courses: 'https://pub-23110dcf45f74b728f78d68b66c06cc8.r2.dev/itch%20the%20glitch%202.wav'
 }
 
@@ -127,7 +147,18 @@ const mapDefinitions = {
         imageUrl: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/temples/air/Temple-air.png',
         imageClass: 'air-temple-node'
       },
-      { id: 'course', name: 'Course Academy', x: 50, y: 10, tone: 'courses', type: 'page' }
+      {
+        id: 'course',
+        name: 'Course Academy',
+        x: 47,
+        y: 6,
+        tone: 'courses',
+        type: 'map',
+        targetMap: 'courseAcademy',
+        imageUrl:
+          'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/maps/course/course-academy-2.png',
+        imageClass: 'course-academy-node'
+      }
     ]
   },
   hall: {
@@ -177,7 +208,7 @@ const mapDefinitions = {
       }
     ]
   },
-  civilx: {
+  civilxLab: {
     title: 'CivilX Lab Interior',
     nodes: [
       { id: 'station-a', name: 'Project Station Alpha', x: 26, y: 26, tone: 'lab', type: 'quest' },
@@ -212,6 +243,32 @@ const mapDefinitions = {
     nodes: [
       { id: 'air-quest', name: 'Air Projects / Quests Placeholder', x: 48, y: 42, tone: 'air', type: 'quest' },
       { id: 'air-exit', name: 'Back to Overworld Exit', x: 76, y: 80, tone: 'exit', type: 'map', targetMap: 'overworld' }
+    ]
+  },
+  courseAcademy: {
+    title: 'Course Academy Interior',
+    nodes: [
+      {
+        id: 'course-board',
+        name: 'Courses Portal',
+        x: 48,
+        y: 42,
+        tone: 'courses',
+        type: 'page',
+        prompt: 'View Courses?',
+        actionLabel: 'View Courses'
+      },
+      {
+        id: 'course-exit',
+        name: 'Back to Overworld Exit',
+        x: 76,
+        y: 80,
+        tone: 'exit',
+        type: 'map',
+        targetMap: 'overworld',
+        prompt: 'Return to Overworld?',
+        actionLabel: 'Exit Academy'
+      }
     ]
   }
 }
@@ -431,6 +488,7 @@ function App() {
       store: 'store',
       shows: 'shows',
       'course-link': 'courses',
+      'course-board': 'courses',
       course: 'courses'
     }
 
@@ -450,7 +508,7 @@ function App() {
 
     const overlay = openHallOverlayByNodeId(node.id)
     if (overlay) {
-      if (currentMap !== 'hall') {
+      if (currentMap !== 'hall' && currentMap !== 'courseAcademy') {
         setCurrentMap('hall')
         setPlayerPosition({ x: 50, y: 52 })
       }
@@ -488,7 +546,7 @@ function App() {
     if (action === 'view') {
       const overlay = openHallOverlayByNodeId(node.id)
       if (overlay) {
-        if (currentMap !== 'hall') {
+        if (currentMap !== 'hall' && currentMap !== 'courseAcademy') {
           setCurrentMap('hall')
           setPlayerPosition({ x: 50, y: 52 })
         }
@@ -512,6 +570,7 @@ function App() {
       store: { primary: 'Browse Items' },
       shows: { primary: 'View Shows', secondary: 'Book Now' },
       'course-link': { primary: 'View Courses' },
+      'course-board': { primary: 'View Courses' },
       course: { primary: 'View Courses' }
     }
 
@@ -771,22 +830,28 @@ function App() {
   const mapInteriorBackgroundClass =
     currentMap === 'hall'
       ? 'map-hall'
-      : currentMap === 'fireTemple'
-        ? 'map-fire-temple'
-        : currentMap === 'waterTemple'
-          ? 'map-water-temple'
-          : currentMap === 'earthTemple'
-            ? 'map-earth-temple'
-            : currentMap === 'airTemple'
-              ? 'map-air-temple'
-              : ''
+      : currentMap === 'civilxLab'
+        ? 'map-civilx-lab'
+        : currentMap === 'fireTemple'
+          ? 'map-fire-temple'
+          : currentMap === 'waterTemple'
+            ? 'map-water-temple'
+            : currentMap === 'earthTemple'
+              ? 'map-earth-temple'
+              : currentMap === 'airTemple'
+                ? 'map-air-temple'
+                : currentMap === 'courseAcademy'
+                  ? 'map-course-academy'
+                  : ''
 
   const showMapTerrainDecor =
     currentMap !== 'hall' &&
+    currentMap !== 'civilxLab' &&
     currentMap !== 'fireTemple' &&
     currentMap !== 'waterTemple' &&
     currentMap !== 'earthTemple' &&
-    currentMap !== 'airTemple'
+    currentMap !== 'airTemple' &&
+    currentMap !== 'courseAcademy'
 
   const mobileRpgMapCameraStyle = useMemo(() => {
     if (!isMobileMapView) return undefined
@@ -872,9 +937,7 @@ function App() {
 
       {step === 1 && (
         <section className="onboarding-space-screen">
-          <div className="starfield starfield-one" />
-          <div className="starfield starfield-two" />
-          <div className="starfield starfield-three" />
+          <OnboardingCosmosBackground />
           <div className="onboarding-frame-shell">
             <img className="frame-art" src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/frames/frame-1.png" alt="" aria-hidden="true" />
             <div className="content-layer intro-content-layer">
@@ -898,9 +961,7 @@ function App() {
 
       {step === 2 && (
         <section className="onboarding-space-screen">
-          <div className="starfield starfield-one" />
-          <div className="starfield starfield-two" />
-          <div className="starfield starfield-three" />
+          <OnboardingCosmosBackground />
           <div className="onboarding-frame-shell">
             <img className="frame-art" src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/frames/frame-1.png" alt="" aria-hidden="true" />
             <div className="content-layer guild-content-layer">
@@ -939,9 +1000,7 @@ function App() {
 
       {step === 3 && (
         <section className="onboarding-space-screen">
-          <div className="starfield starfield-one" />
-          <div className="starfield starfield-two" />
-          <div className="starfield starfield-three" />
+          <OnboardingCosmosBackground />
           <div className="onboarding-frame-shell">
             <img className="frame-art" src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/frames/frame-1.png" alt="" aria-hidden="true" />
             <div className="content-layer name-content-layer">
