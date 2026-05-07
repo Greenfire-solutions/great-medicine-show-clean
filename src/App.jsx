@@ -1107,13 +1107,13 @@ function App() {
   )}
 </div>
 
-              {nearbyLocation && !dialogueNode && (
+              {nearbyLocation && !dialogueNode && !isMobileMapView && (
                 <button className="enter-prompt arcade-button" onClick={() => openDialogue(nearbyLocation)}>
                   {nearbyLocation.prompt || `Enter ${nearbyLocation.name}`}
                 </button>
               )}
 
-              {dialogueNode && (
+              {!isMobileMapView && dialogueNode && (
                 <div className="dialogue-bubble" role="dialog" aria-label="Interaction dialogue">
                   <p>{dialogueNode.prompt || `Interact with ${dialogueNode.name}?`}</p>
                   <div className="dialogue-actions">
@@ -1157,6 +1157,60 @@ function App() {
                 </div>
               )}
               </div>
+
+              {isMobileMapView && nearbyLocation && !dialogueNode && (
+                <div className="mobile-map-dialogue">
+                  <button className="enter-prompt arcade-button" onClick={() => openDialogue(nearbyLocation)}>
+                    {nearbyLocation.prompt || `Enter ${nearbyLocation.name}`}
+                  </button>
+                </div>
+              )}
+
+              {isMobileMapView && dialogueNode && (
+                <div className="mobile-map-dialogue">
+                  <div className="dialogue-bubble" role="dialog" aria-label="Interaction dialogue">
+                    <p>{dialogueNode.prompt || `Interact with ${dialogueNode.name}?`}</p>
+                    <div className="dialogue-actions">
+                      {dialogueNode.type === 'map' ? (
+                        <>
+                          <button className="arcade-button" onClick={() => handleNodeAction(dialogueNode, 'yes')}>
+                            Yes
+                          </button>
+                          <button className="arcade-button" onClick={closeDialogue}>
+                            Not now
+                          </button>
+                        </>
+                      ) : dialogueNode.type === 'quest' ? (
+                        <>
+                          <button className="arcade-button" onClick={() => handleNodeAction(dialogueNode, 'quest')}>
+                            Join Quest
+                          </button>
+                          <button className="arcade-button" onClick={() => handleNodeAction(dialogueNode, 'view')}>
+                            View Page
+                          </button>
+                          <button className="arcade-button" onClick={closeDialogue}>
+                            Not now
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button className="arcade-button" onClick={() => handleNodeAction(dialogueNode, 'view')}>
+                            {getNonQuestActions(dialogueNode).primary}
+                          </button>
+                          {getNonQuestActions(dialogueNode).secondary && (
+                            <button className="arcade-button" onClick={() => handleNodeAction(dialogueNode, 'view')}>
+                              {getNonQuestActions(dialogueNode).secondary}
+                            </button>
+                          )}
+                          <button className="arcade-button" onClick={closeDialogue}>
+                            Not now
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mobile-controls" aria-label="Map movement controls">

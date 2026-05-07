@@ -3072,6 +3072,44 @@ input:focus-visible {
     margin-right: 0;
     transform-origin: top left;
   }
+
+  /* Dialogue / enter prompt fixed to viewport — not transformed with camera-follow map */
+  .mobile-map-dialogue {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    z-index: 50;
+    width: min(calc(100% - 24px), 420px);
+    max-height: 42%;
+    overflow-y: auto;
+    pointer-events: auto;
+  }
+
+  .mobile-map-dialogue .dialogue-bubble {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  .mobile-map-dialogue .dialogue-bubble p {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .mobile-map-dialogue .enter-prompt {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    display: block;
+  }
 }
 
 /* === OVERWORLD MAP IMAGE LAYER === */
