@@ -792,7 +792,6 @@ function App() {
           <div className="onboarding-frame-shell">
             <img className="frame-art" src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/frames/frame-1.png" alt="" aria-hidden="true" />
             <div className="content-layer intro-content-layer">
-              <div />
               <img
                 className="intro-title-image"
                 src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/backgrounds/game-title.png"
@@ -818,7 +817,7 @@ function App() {
           <div className="starfield starfield-three" />
           <div className="onboarding-frame-shell">
             <img className="frame-art" src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/frames/frame-1.png" alt="" aria-hidden="true" />
-            <div className="content-layer">
+            <div className="content-layer guild-content-layer">
               <h2 className="glyph-title onboarding-title">Choose Your Elemental Guild</h2>
               <div className="element-grid">
                 {guilds.map((option) => {
@@ -859,7 +858,7 @@ function App() {
           <div className="starfield starfield-three" />
           <div className="onboarding-frame-shell">
             <img className="frame-art" src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/frames/frame-1.png" alt="" aria-hidden="true" />
-            <div className="content-layer">
+            <div className="content-layer name-content-layer">
               <h2 className="glyph-title onboarding-title">Name Your Character</h2>
               <div className="name-form-panel">
                 <label htmlFor="characterName">Character Name</label>
@@ -875,7 +874,6 @@ function App() {
                   Enter World
                 </button>
               </div>
-              <div />
             </div>
           </div>
         </section>

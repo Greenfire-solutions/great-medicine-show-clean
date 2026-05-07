@@ -343,13 +343,18 @@ input {
 /* Precision onboarding layout overrides */
 .onboarding-space-screen {
   min-height: 100vh;
-  width: 100vw;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   background: #000;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  padding: 0.35rem 0;
 }
 
 .onboarding-space-screen::before,
@@ -410,15 +415,17 @@ input {
 
 .onboarding-frame-shell {
   position: relative;
-  width: min(96vw, 1180px);
+  width: min(calc(100% - 1rem), 1180px);
   height: min(82vh, 640px);
   max-width: 1180px;
-  max-height: 640px;
+  max-height: min(640px, 90dvh);
   display: grid;
-  grid-template-rows: 90px 1fr 90px;
-  padding: 72px 52px 64px;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  padding: clamp(2.25rem, 7vw, 4.5rem) clamp(1.1rem, 4.5vw, 3.25rem) clamp(1.85rem, 5.5vw, 4rem);
   box-sizing: border-box;
   z-index: 2;
+  margin: 0 auto;
 }
 
 .frame-art {
@@ -434,9 +441,31 @@ input {
 .content-layer {
   position: relative;
   z-index: 1;
+  min-height: 0;
   height: 100%;
+  max-height: 100%;
   display: grid;
-  grid-template-rows: 70px 1fr 70px;
+  align-content: center;
+}
+
+.intro-content-layer {
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  gap: clamp(0.5rem, 2vh, 1rem);
+  align-content: center;
+}
+
+.guild-content-layer {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: clamp(0.35rem, 1.5vh, 0.65rem);
+  min-height: 0;
+}
+
+.name-content-layer {
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(0.45rem, 2vh, 0.75rem);
+  justify-items: center;
+  min-height: 0;
 }
 
 .onboarding-title {
@@ -447,35 +476,38 @@ input {
   margin: 0;
 }
 
-.intro-content-layer {
-  align-items: center;
-  justify-items: center;
-}
-
 .intro-content-layer .intro-title-image {
-  width: min(88vw, 900px);
-  max-height: 55vh;
+  width: min(100%, 900px);
+  max-width: 100%;
+  max-height: clamp(160px, 44vh, 400px);
   object-fit: contain;
+  object-position: center center;
 }
 
 .intro-content-layer .intro-start-button {
-  place-self: center;
+  flex-shrink: 0;
 }
 
 .element-grid {
-  width: min(72vw, 760px);
+  width: 100%;
+  max-width: min(72vw, 760px);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.45rem, 2.5vw, 1.25rem);
   align-items: center;
   justify-items: center;
+  min-height: 0;
 }
 
 .element-card {
-  width: 135px;
-  height: 170px;
-  padding: 10px;
+  width: 100%;
+  max-width: 135px;
+  height: auto;
+  min-height: 148px;
+  aspect-ratio: 27 / 34;
+  max-height: 170px;
+  padding: clamp(6px, 1.5vw, 10px);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -521,8 +553,8 @@ input {
   height: 100%;
 }
 
-.content-layer > .onboarding-continue {
-  margin-top: 8px;
+.guild-content-layer > .onboarding-continue {
+  margin-top: 4px;
 }
 
 .onboarding-continue {
@@ -533,11 +565,18 @@ input {
 
 .name-form-panel {
   width: 100%;
-  max-width: 520px;
-  place-self: center;
+  max-width: min(520px, 100%);
+  place-self: stretch;
   display: grid;
-  gap: 10px;
-  justify-items: center;
+  gap: clamp(0.45rem, 2vw, 10px);
+  justify-items: stretch;
+  min-height: 0;
+  overflow: auto;
+}
+
+.name-form-panel label,
+.name-form-panel .small {
+  text-align: center;
 }
 
 .name-form-panel input {
@@ -611,6 +650,9 @@ input {
 
 .arcade-screen.onboarding-mode {
   padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .arcade-screen::before,
@@ -954,15 +996,15 @@ input:focus-visible {
 .map-node {
   position: absolute;
   z-index: 2;
-  min-width: 130px;
-  max-width: 180px;
-  padding: 0.45rem 0.55rem;
+  min-width: 112px;
+  max-width: 158px;
+  padding: 0.36rem 0.48rem;
   text-align: center;
   border-radius: 12px;
 }
 
 .node-label {
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   line-height: 1.2;
   font-weight: 600;
 }
@@ -1616,38 +1658,86 @@ input:focus-visible {
 
 @media (max-width: 720px) {
   .onboarding-frame-shell {
-    width: 96vw;
+    width: min(calc(100% - 0.75rem), 1180px);
     height: auto;
-    min-height: 620px;
-    padding: 56px 28px 42px;
+    min-height: min(520px, 78dvh);
+    max-height: none;
+    padding: clamp(1.65rem, 5vw, 2.6rem) clamp(0.75rem, 3.5vw, 1.35rem) clamp(1.35rem, 4vw, 2rem);
+  }
+
+  .onboarding-title {
+    font-size: clamp(0.92rem, 4vw, 1.25rem);
+    line-height: 1.2;
+    text-align: center;
+    padding: 0 0.35rem;
+  }
+
+  .intro-content-layer .intro-title-image {
+    max-height: min(38vh, 300px);
+  }
+
+  .intro-start-button img {
+    width: min(88vw, 300px);
   }
 
   .element-grid {
-    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 100%;
+    gap: 0.4rem;
   }
 
   .element-card {
-    height: 190px;
+    max-width: none;
+    width: 100%;
+    min-height: 132px;
+    max-height: none;
+    aspect-ratio: unset;
+    height: auto;
+    padding: 6px;
   }
 
   .onboarding-space-screen .guild-icon-button img {
-    width: 86px;
-    height: 86px;
+    width: min(18vw, 70px);
+    height: min(18vw, 70px);
   }
 
   .element-label-button {
-    width: 124px;
-    height: 40px;
+    width: 100%;
+    max-width: 112px;
+    height: 32px;
+    margin-top: 6px;
+  }
+
+  .element-label-button span {
+    font-size: 11px;
+  }
+
+  .name-form-panel {
+    max-width: 100%;
+    padding: 0 0.15rem;
+  }
+
+  .name-form-panel input {
+    max-width: none;
   }
 }
 
 @media (max-width: 420px) {
   .onboarding-space-screen {
-    overflow-y: auto;
+    align-items: flex-start;
+    padding: 0.5rem 0 0.75rem;
+  }
+
+  .onboarding-frame-shell {
+    min-height: min(480px, 82dvh);
   }
 
   .element-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .intro-content-layer .intro-title-image {
+    max-height: min(34vh, 240px);
   }
 }
 /* === PHASE 1: WORLD MAP / NAVIGATION UI UPGRADE ONLY === */
@@ -1816,9 +1906,9 @@ input:focus-visible {
 
 .map-node {
   z-index: 4;
-  min-width: 138px;
-  max-width: 190px;
-  padding: 0.48rem 0.62rem;
+  min-width: 118px;
+  max-width: 162px;
+  padding: 0.38rem 0.5rem;
   border-radius: 6px;
   border-width: 2px;
   background:
@@ -1844,7 +1934,7 @@ input:focus-visible {
 }
 
 .node-label {
-  font-size: 0.77rem;
+  font-size: 0.72rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
@@ -1950,13 +2040,14 @@ input:focus-visible {
   }
 
   .map-node {
-    min-width: 96px;
-    max-width: 120px;
-    padding: 0.34rem 0.42rem;
+    min-width: 80px;
+    max-width: 102px;
+    padding: 0.28rem 0.34rem;
   }
 
   .node-label {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
+    line-height: 1.15;
   }
 }/* === OVERWORLD MAP IMAGE LAYER === */
 
