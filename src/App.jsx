@@ -40,9 +40,56 @@ const guildCharacterSprites = {
     walking: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/water/character-water-walking.png',
     back: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/water/character-water-back.png'
   },
-  'Fire Guild': null,
-  'Earth Guild': null,
-  'Air Guild': null
+  'Fire Guild': {
+    idle: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/fire/character-fire-idle.png',
+    walking: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/fire/character-fire-walk.png',
+    back: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/fire/character-fire-back.png'
+  },
+  'Earth Guild': {
+    idle: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/earth/character-earth-idle.png',
+    walking: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/earth/character-earth-walking.png',
+    back: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/earth/character-earth-back.png'
+  },
+  'Air Guild': {
+    idle: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/Air/character-air-idle.png',
+    walking: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/Air/character-air-walking.png',
+    back: 'https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/characters/guilds/Air/character-air-back.png'
+  }
+}
+
+const guildCharacters = {
+  'Water Guild': [
+    {
+      id: 'water-default',
+      name: 'Water Guardian',
+      preview: guildCharacterSprites['Water Guild'].idle,
+      sprites: guildCharacterSprites['Water Guild']
+    }
+  ],
+  'Fire Guild': [
+    {
+      id: 'fire-default',
+      name: 'Fire Guardian',
+      preview: guildCharacterSprites['Fire Guild'].idle,
+      sprites: guildCharacterSprites['Fire Guild']
+    }
+  ],
+  'Earth Guild': [
+    {
+      id: 'earth-default',
+      name: 'Earth Guardian',
+      preview: guildCharacterSprites['Earth Guild'].idle,
+      sprites: guildCharacterSprites['Earth Guild']
+    }
+  ],
+  'Air Guild': [
+    {
+      id: 'air-default',
+      name: 'Air Guardian',
+      preview: guildCharacterSprites['Air Guild'].idle,
+      sprites: guildCharacterSprites['Air Guild']
+    }
+  ]
 }
 
 const mapDefinitions = {
@@ -224,8 +271,9 @@ const getSavedProfile = () => {
 
 function App() {
   const savedProfile = useMemo(getSavedProfile, [])
-  const [step, setStep] = useState(savedProfile ? 4 : 1)
+  const [step, setStep] = useState(savedProfile ? 5 : 1)
   const [guild, setGuild] = useState(savedProfile?.guild || '')
+  const [characterId, setCharacterId] = useState(savedProfile?.characterId || '')
   const [name, setName] = useState(savedProfile?.name || '')
   const [currentMap, setCurrentMap] = useState('overworld')
   const [activeSection, setActiveSection] = useState('Hall of Great Works')
@@ -336,9 +384,9 @@ function App() {
   }
 
   const enterWorld = () => {
-    const profile = { guild, name: name.trim() }
+    const profile = { guild, characterId, name: name.trim() }
     localStorage.setItem(saveKey, JSON.stringify(profile))
-    setStep(4)
+    setStep(5)
   }
 
   const handleBeginOnboarding = () => {
@@ -578,6 +626,13 @@ function App() {
   }
 
   useEffect(() => {
+    const selectedGuildCharacters = guildCharacters[guild] || []
+    if (!selectedGuildCharacters.some((character) => character.id === characterId)) {
+      setCharacterId('')
+    }
+  }, [guild, characterId])
+
+  useEffect(() => {
     setDialogueNode(null)
     if (currentMap !== 'hall') {
       setHallOverlay(null)
@@ -666,7 +721,7 @@ function App() {
       return
     }
   
-    if (step === 4 && backgroundMusicUnlocked) {
+    if (step === 5 && backgroundMusicUnlocked) {
       backgroundMusicRef.current.play().catch(() => {})
     }
   }, [currentMap, hallOverlay, isTrackPlaying, step, backgroundMusicUnlocked])
@@ -682,7 +737,7 @@ function App() {
   }, [epkOpen])
 
   useEffect(() => {
-    if (step !== 4) return
+    if (step !== 5) return
 
     const handleKeyDown = (event) => {
       if (epkOpen) return
@@ -706,7 +761,9 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [step, nearbyLocation, dialogueNode, epkOpen])
 
-  const activeCharacterSprites = guildCharacterSprites[guild] || guildCharacterSprites['Water Guild']
+  const selectedGuildCharacters = guildCharacters[guild] || guildCharacters['Water Guild']
+  const selectedCharacter = selectedGuildCharacters.find((character) => character.id === characterId) || selectedGuildCharacters[0]
+  const activeCharacterSprites = selectedCharacter?.sprites || guildCharacterSprites['Water Guild']
 
   const activeCharacterImage =
     characterDirection === 'up'
@@ -725,8 +782,8 @@ function App() {
           : 'facing-down'
 
   return (
-    <div className={`app-shell arcade-screen ${step < 4 ? 'onboarding-mode' : ''}`}>
-      {step === 4 && (
+    <div className={`app-shell arcade-screen ${step < 5 ? 'onboarding-mode' : ''}`}>
+      {step === 5 && (
         <div className="site-header-stack">
           <header className="game-title-banner" aria-label="The Great Medicine Show">
             <div className="game-title-banner-crop">
@@ -858,6 +915,45 @@ function App() {
           <div className="starfield starfield-three" />
           <div className="onboarding-frame-shell">
             <img className="frame-art" src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/frames/frame-1.png" alt="" aria-hidden="true" />
+            <div className="content-layer guild-content-layer">
+              <h2 className="glyph-title onboarding-title">Choose Your Character</h2>
+              <div className="character-choice-grid">
+                {(guildCharacters[guild] || []).map((character) => (
+                  <button
+                    key={character.id}
+                    type="button"
+                    className={`character-choice-card ${characterId === character.id ? 'selected' : ''}`}
+                    onClick={() => setCharacterId(character.id)}
+                  >
+                    <img
+                      src={character.preview}
+                      alt={character.name}
+                      className="character-choice-preview"
+                    />
+                    <span className="character-choice-name">{character.name}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="dialogue-actions onboarding-character-actions">
+                <button className="arcade-button" onClick={() => setStep(2)}>
+                  Back
+                </button>
+                <button className="arcade-button" disabled={!characterId} onClick={() => setStep(4)}>
+                  Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {step === 4 && (
+        <section className="onboarding-space-screen">
+          <div className="starfield starfield-one" />
+          <div className="starfield starfield-two" />
+          <div className="starfield starfield-three" />
+          <div className="onboarding-frame-shell">
+            <img className="frame-art" src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/frames/frame-1.png" alt="" aria-hidden="true" />
             <div className="content-layer name-content-layer">
               <h2 className="glyph-title onboarding-title">Name Your Character</h2>
               <div className="name-form-panel">
@@ -879,7 +975,7 @@ function App() {
         </section>
       )}
 
-      {step === 4 && (
+      {step === 5 && (
         <section className="arcade-panel world-panel" onClick={unlockBackgroundMusic}>
           <button className="arcade-button nav-toggle" onClick={() => setNavOpen((value) => !value)}>
             {navOpen ? 'Hide Navigation' : 'Show Navigation'}
