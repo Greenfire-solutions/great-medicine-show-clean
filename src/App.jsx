@@ -3,6 +3,14 @@ import { musicData } from './data/musicData'
 import { storeItems } from './data/storeData'
 import { upcomingShows, bookingOffers } from './data/showsData'
 import { courses } from './data/coursesData'
+import {
+  artistLinks,
+  epkContact,
+  epkContent,
+  epkLogoUrl,
+  epkPerformanceImageUrl,
+  epkPortraitUrl
+} from './data/epkData'
 
 const guilds = ['Fire Guild', 'Water Guild', 'Earth Guild', 'Air Guild']
 const saveKey = 'gms-cyber-hall-profile'
@@ -198,6 +206,13 @@ const mapDefinitions = {
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
 
+const hallShortcuts = {
+  music: { overlay: 'music', section: 'Music Hall' },
+  store: { overlay: 'store', section: 'Store' },
+  shows: { overlay: 'shows', section: 'Shows / Booking Desk' },
+  courses: { overlay: 'courses', section: 'Courses Portal' }
+}
+
 const getSavedProfile = () => {
   try {
     const value = localStorage.getItem(saveKey)
@@ -236,6 +251,7 @@ function App() {
   const [characterDirection, setCharacterDirection] = useState('down')
   const [characterMoving, setCharacterMoving] = useState(false)
   const [backgroundMusicUnlocked, setBackgroundMusicUnlocked] = useState(false)
+  const [epkOpen, setEpkOpen] = useState(false)
   const audioRef = useRef(null)
   const shouldAutoplayOnTrackChangeRef = useRef(false)
   const clickAudioRef = useRef(null)
@@ -425,6 +441,24 @@ function App() {
     setActiveSection(node.name)
   }
 
+  const openHallShortcut = (key) => {
+    const target = hallShortcuts[key]
+    if (!target) return
+    setEpkOpen(false)
+    setNavOpen(false)
+    setDialogueNode(null)
+    if (currentMap !== 'hall') {
+      setCurrentMap('hall')
+      setPlayerPosition({ x: 50, y: 52 })
+    }
+    setHallOverlay(target.overlay)
+    setActiveSection(target.section)
+    if (target.overlay === 'courses') {
+      setSelectedCourse(null)
+      setShowCourseOptionPicker(false)
+    }
+  }
+
   const handleNodeAction = (node, action) => {
     if (action === 'yes' && node.type === 'map' && node.targetMap) {
       setCurrentMap(node.targetMap)
@@ -545,7 +579,9 @@ function App() {
 
   useEffect(() => {
     setDialogueNode(null)
-    setHallOverlay(null)
+    if (currentMap !== 'hall') {
+      setHallOverlay(null)
+    }
     setTrackSearch('')
     setTrackCategory('All')
     setStoreSearch('')
@@ -637,9 +673,19 @@ function App() {
 
 
   useEffect(() => {
+    if (!epkOpen) return
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') setEpkOpen(false)
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [epkOpen])
+
+  useEffect(() => {
     if (step !== 4) return
 
     const handleKeyDown = (event) => {
+      if (epkOpen) return
       const key = event.key.toLowerCase()
       if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd', 'enter'].includes(key)) {
         event.preventDefault()
@@ -658,7 +704,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [step, nearbyLocation, dialogueNode])
+  }, [step, nearbyLocation, dialogueNode, epkOpen])
 
   const activeCharacterSprites = guildCharacterSprites[guild] || guildCharacterSprites['Water Guild']
 
@@ -681,12 +727,61 @@ function App() {
   return (
     <div className={`app-shell arcade-screen ${step < 4 ? 'onboarding-mode' : ''}`}>
       {step === 4 && (
-       <header className="game-title-banner" aria-label="The Great Medicine Show">
-       <img
-         src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/banners/title-banner-header.png"
-         alt="The Great Medicine Show"
-       />
-     </header>
+        <div className="site-header-stack">
+          <header className="game-title-banner" aria-label="The Great Medicine Show">
+            <div className="game-title-banner-crop">
+              <img
+                src="https://pub-4cf809a1f40f409f93cbf7ded1f9e822.r2.dev/great-medicine-media/ui/banners/title-banner-header.png"
+                alt="The Great Medicine Show"
+                width={1536}
+                height={1024}
+                decoding="async"
+              />
+            </div>
+          </header>
+          <div className="site-top-bar">
+            <nav className="site-top-bar-nav" aria-label="Hall shortcuts">
+              <button
+                type="button"
+                className={`site-top-bar-btn ${hallOverlay === 'music' ? 'is-active' : ''}`}
+                onClick={() => openHallShortcut('music')}
+              >
+                Music
+              </button>
+              <button
+                type="button"
+                className={`site-top-bar-btn ${hallOverlay === 'courses' ? 'is-active' : ''}`}
+                onClick={() => openHallShortcut('courses')}
+              >
+                Courses
+              </button>
+              <button
+                type="button"
+                className={`site-top-bar-btn ${hallOverlay === 'store' ? 'is-active' : ''}`}
+                onClick={() => openHallShortcut('store')}
+              >
+                Store
+              </button>
+              <button
+                type="button"
+                className={`site-top-bar-btn ${hallOverlay === 'shows' ? 'is-active' : ''}`}
+                onClick={() => openHallShortcut('shows')}
+              >
+                Shows
+              </button>
+              <button
+                type="button"
+                className={`site-top-bar-btn site-top-bar-btn--epk ${epkOpen ? 'is-active' : ''}`}
+                onClick={() => {
+                  setHallOverlay(null)
+                  setEpkOpen(true)
+                }}
+              >
+                Electronic Press Kit
+              </button>
+            </nav>
+          </div>
+        </div>
       )}
 
       {step === 1 && (
@@ -1018,9 +1113,9 @@ function App() {
                     </div>
                     <p className="small">Full on-site music streaming is coming soon. For now, listen on Spotify, SoundCloud, or YouTube.</p>
                     <div className="platform-links">
-                      <a className="arcade-button" href="https://open.spotify.com/artist/1WJF0hb9fzUpj7JrfobXQb" target="_blank" rel="noreferrer">Spotify</a>
-                      <a className="arcade-button" href="https://soundcloud.com/user-553993483" target="_blank" rel="noreferrer">SoundCloud</a>
-                      <a className="arcade-button" href="https://www.youtube.com/@thegreatmedicineshow" target="_blank" rel="noreferrer">YouTube</a>
+                      <a className="arcade-button" href={artistLinks.spotify} target="_blank" rel="noreferrer">Spotify</a>
+                      <a className="arcade-button" href={artistLinks.soundcloud} target="_blank" rel="noreferrer">SoundCloud</a>
+                      <a className="arcade-button" href={artistLinks.youtube} target="_blank" rel="noreferrer">YouTube</a>
                     </div>
                   </div>
                 </div>
@@ -1230,6 +1325,121 @@ function App() {
         </div>
       )}
 
+      {epkOpen && (
+        <div
+          className="epk-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="epk-title"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setEpkOpen(false)
+          }}
+        >
+          <div className="epk-panel arcade-panel">
+            <div className="epk-toolbar">
+              <p id="epk-title" className="epk-toolbar-title">
+                Electronic Press Kit
+              </p>
+              <button type="button" className="arcade-button epk-close-btn" onClick={() => setEpkOpen(false)}>
+                Close
+              </button>
+            </div>
+
+            <div className="epk-hero">
+              <div className="epk-hero-left">
+                <p className="epk-tagline">{epkContent.tagline}</p>
+                <div className="epk-mark-stack" aria-hidden="true">
+                  <span>×</span>
+                  <span>×</span>
+                  <span>×</span>
+                </div>
+                <div className="epk-portrait-frame">
+                  <img src={epkPortraitUrl} alt="The Great Medicine Show" className="epk-portrait" />
+                </div>
+              </div>
+              <div className="epk-hero-right">
+                <img src={epkLogoUrl} alt="" className="epk-wordmark" />
+                <div className="epk-bio">
+                  <p>{epkContent.bio}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="glowing-divider epk-divider" />
+
+            <div className="epk-mid">
+              <ul className="epk-bullet-list">
+                {epkContent.bullets.map((item) => (
+                  <li key={item.title}>
+                    <span className="epk-play-icon" aria-hidden="true" />
+                    <div className="epk-bullet-body">
+                      <strong>{item.title}</strong>
+                      <p className="epk-bullet-text">{item.text}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <figure className="epk-performance">
+                <img src={epkPerformanceImageUrl} alt="Live performance" />
+                <figcaption className="small">Live energy &amp; stage presence</figcaption>
+              </figure>
+            </div>
+
+            <p className="epk-shows-line">
+              <strong>Shows played:</strong> {epkContent.showsPlayed}
+            </p>
+
+            <div className="glowing-divider epk-divider" />
+
+            <div className="epk-bottom">
+              <div className="epk-bottom-left">
+                <p className="epk-draw">
+                  <strong>{epkContent.draw}</strong>
+                </p>
+                <p className="small epk-supports-label">Past supports &amp; shared bills</p>
+                <p className="epk-supports">{epkContent.pastSupports}</p>
+              </div>
+              <div className="epk-bottom-right">
+                <p className="small epk-connect-heading">Connect</p>
+                <ul className="epk-connect-list">
+                  <li>
+                    <span className="epk-connect-icon epk-connect-icon-phone" aria-hidden="true" />
+                    <a href={`tel:${epkContact.phoneTel}`}>{epkContact.phoneDisplay}</a>
+                  </li>
+                  <li>
+                    <span className="epk-connect-icon epk-connect-icon-mail" aria-hidden="true" />
+                    <a href={`mailto:${epkContact.email}`}>{epkContact.email}</a>
+                  </li>
+                  <li>
+                    <span className="epk-connect-icon epk-connect-icon-globe" aria-hidden="true" />
+                    <a href={artistLinks.instagram} target="_blank" rel="noreferrer">
+                      Instagram
+                    </a>
+                  </li>
+                  <li>
+                    <span className="epk-connect-icon epk-connect-icon-note" aria-hidden="true" />
+                    <a href={artistLinks.spotify} target="_blank" rel="noreferrer">
+                      Spotify
+                    </a>
+                  </li>
+                  <li>
+                    <span className="epk-connect-icon epk-connect-icon-wave" aria-hidden="true" />
+                    <a href={artistLinks.soundcloud} target="_blank" rel="noreferrer">
+                      SoundCloud
+                    </a>
+                  </li>
+                  <li>
+                    <span className="epk-connect-icon epk-connect-icon-tube" aria-hidden="true" />
+                    <a href={artistLinks.youtube} target="_blank" rel="noreferrer">
+                      YouTube
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {bookingForm && (
         <div className="booking-modal-backdrop" role="dialog" aria-label="Booking inquiry form">
