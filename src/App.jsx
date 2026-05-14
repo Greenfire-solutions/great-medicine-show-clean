@@ -336,6 +336,8 @@ function App() {
   const backgroundMusicTimesRef = useRef({})
   const activeSoundtrackKeyRef = useRef('overworld')
   const mapCameraViewportRef = useRef(null)
+  const mobileMoveIntervalRef = useRef(null)
+  const [isTouchMovementLayout, setIsTouchMovementLayout] = useState(false)
 
   const currentMapDef = mapDefinitions[currentMap]
 
@@ -459,6 +461,43 @@ function App() {
       x: clamp(prev.x + dx, 4, 96),
       y: clamp(prev.y + dy, 4, 96)
     }))
+  }
+
+  const clearMobileMoveLoop = () => {
+    if (mobileMoveIntervalRef.current != null) {
+      window.clearInterval(mobileMoveIntervalRef.current)
+      mobileMoveIntervalRef.current = null
+    }
+  }
+
+  const startMobileMove = (dx, dy, event) => {
+    if (event?.cancelable) event.preventDefault()
+    const target = event?.currentTarget
+    if (target && typeof target.setPointerCapture === 'function' && event?.pointerId != null) {
+      try {
+        target.setPointerCapture(event.pointerId)
+      } catch {
+        /* ignore */
+      }
+    }
+    clearMobileMoveLoop()
+    movePlayer(dx, dy)
+    mobileMoveIntervalRef.current = window.setInterval(() => {
+      movePlayer(dx, dy)
+    }, 105)
+  }
+
+  const stopMobileMove = (event) => {
+    if (event?.cancelable) event.preventDefault()
+    const target = event?.currentTarget
+    if (target && typeof target.releasePointerCapture === 'function' && event?.pointerId != null) {
+      try {
+        target.releasePointerCapture(event.pointerId)
+      } catch {
+        /* ignore */
+      }
+    }
+    clearMobileMoveLoop()
   }
 
   const nearbyLocation = useMemo(() => {
@@ -767,6 +806,21 @@ function App() {
     mq.addEventListener('change', sync)
     return () => mq.removeEventListener('change', sync)
   }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(max-width: 900px)')
+    const sync = () => setIsTouchMovementLayout(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  useEffect(() => () => clearMobileMoveLoop(), [])
+
+  useEffect(() => {
+    clearMobileMoveLoop()
+  }, [dialogueNode, hallOverlay, bookingForm, epkOpen, step])
 
   useLayoutEffect(() => {
     if (step !== 4) return undefined
@@ -1213,22 +1267,89 @@ function App() {
               )}
             </div>
 
-            <div className="mobile-controls" aria-label="Map movement controls">
-              <button className="arcade-button" onClick={() => movePlayer(0, -stepAmount)}>
-                ↑
-              </button>
-              <div>
-                <button className="arcade-button" onClick={() => movePlayer(-stepAmount, 0)}>
-                  ←
-                </button>
-                <button className="arcade-button" onClick={() => movePlayer(stepAmount, 0)}>
-                  →
-                </button>
-              </div>
-              <button className="arcade-button" onClick={() => movePlayer(0, stepAmount)}>
-                ↓
-              </button>
-            </div>
+            {step === 4 &&
+              isTouchMovementLayout &&
+              !dialogueNode &&
+              !hallOverlay &&
+              !bookingForm &&
+              !epkOpen && (
+                <div
+                  className="mobile-rpg-controls"
+                  role="toolbar"
+                  aria-label="Map movement controls"
+                  onPointerDown={(e) => {
+                    if (e.target === e.currentTarget) e.preventDefault()
+                  }}
+                >
+                  <div className="mobile-dpad" role="group" aria-label="Direction pad">
+                    <span className="mobile-dpad-spacer" aria-hidden="true" />
+                    <button
+                      type="button"
+                      className="mobile-dpad-button mobile-dpad-up arcade-button"
+                      aria-label="Walk up"
+                      onPointerDown={(e) => startMobileMove(0, -stepAmount, e)}
+                      onPointerUp={stopMobileMove}
+                      onPointerCancel={stopMobileMove}
+                      onPointerLeave={stopMobileMove}
+                      onLostPointerCapture={stopMobileMove}
+                    >
+                      ↑
+                    </button>
+                    <span className="mobile-dpad-spacer" aria-hidden="true" />
+                    <button
+                      type="button"
+                      className="mobile-dpad-button mobile-dpad-left arcade-button"
+                      aria-label="Walk left"
+                      onPointerDown={(e) => startMobileMove(-stepAmount, 0, e)}
+                      onPointerUp={stopMobileMove}
+                      onPointerCancel={stopMobileMove}
+                      onPointerLeave={stopMobileMove}
+                      onLostPointerCapture={stopMobileMove}
+                    >
+                      ←
+                    </button>
+                    {nearbyLocation ? (
+                      <button
+                        type="button"
+                        className="mobile-interact-button arcade-button"
+                        aria-label={nearbyLocation.prompt || `Enter ${nearbyLocation.name}`}
+                        onPointerDown={(e) => e.preventDefault()}
+                        onClick={() => openDialogue(nearbyLocation)}
+                      >
+                        Interact
+                      </button>
+                    ) : (
+                      <span className="mobile-dpad-spacer" aria-hidden="true" />
+                    )}
+                    <button
+                      type="button"
+                      className="mobile-dpad-button mobile-dpad-right arcade-button"
+                      aria-label="Walk right"
+                      onPointerDown={(e) => startMobileMove(stepAmount, 0, e)}
+                      onPointerUp={stopMobileMove}
+                      onPointerCancel={stopMobileMove}
+                      onPointerLeave={stopMobileMove}
+                      onLostPointerCapture={stopMobileMove}
+                    >
+                      →
+                    </button>
+                    <span className="mobile-dpad-spacer" aria-hidden="true" />
+                    <button
+                      type="button"
+                      className="mobile-dpad-button mobile-dpad-down arcade-button"
+                      aria-label="Walk down"
+                      onPointerDown={(e) => startMobileMove(0, stepAmount, e)}
+                      onPointerUp={stopMobileMove}
+                      onPointerCancel={stopMobileMove}
+                      onPointerLeave={stopMobileMove}
+                      onLostPointerCapture={stopMobileMove}
+                    >
+                      ↓
+                    </button>
+                    <span className="mobile-dpad-spacer" aria-hidden="true" />
+                  </div>
+                </div>
+              )}
 
 
             <article className="arcade-panel section-panel">
