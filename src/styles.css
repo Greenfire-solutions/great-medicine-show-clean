@@ -1741,12 +1741,23 @@ input:focus-visible {
   padding: 0.35rem 0.7rem;
 }
 
-/* Fixed D-pad + hold-to-move (mounted from App only on narrow viewports, step 4, no modals/dialogue) */
+/* Map-contained D-pad (absolute inside .map-camera-viewport; hold-to-move from App.jsx) */
 .mobile-rpg-controls {
-  position: fixed;
-  left: calc(0.8rem + env(safe-area-inset-left, 0px));
-  bottom: calc(0.8rem + env(safe-area-inset-bottom, 0px));
-  z-index: 40;
+  position: absolute;
+  left: calc(10px + env(safe-area-inset-left, 0px));
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 16px;
+  background: rgba(4, 6, 10, 0.52);
+  border: 1px solid rgba(214, 168, 82, 0.42);
+  box-shadow:
+    0 0 14px rgba(122, 75, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -1757,9 +1768,9 @@ input:focus-visible {
 
 .mobile-dpad {
   display: grid;
-  grid-template-columns: repeat(3, 64px);
-  grid-template-rows: repeat(3, 64px);
-  gap: 6px;
+  grid-template-columns: repeat(3, 52px);
+  grid-template-rows: repeat(3, 52px);
+  gap: 4px;
   align-items: center;
   justify-items: center;
   touch-action: none;
@@ -1775,56 +1786,63 @@ input:focus-visible {
   pointer-events: none;
 }
 
-.mobile-dpad-button,
-.mobile-interact-button {
+.mobile-dpad-button {
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
-  width: 64px;
-  height: 64px;
-  min-width: 64px;
-  min-height: 64px;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  min-height: 52px;
   padding: 0;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1rem;
   line-height: 1;
   box-sizing: border-box;
 }
 
-.mobile-interact-button {
-  font-size: 0.62rem;
+.mobile-interact-pill {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  align-self: center;
+  min-height: 40px;
+  padding: 0.38rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  white-space: normal;
-  text-align: center;
   line-height: 1.15;
-  padding: 0.2rem 0.35rem;
+  max-width: 104px;
+  box-sizing: border-box;
 }
 
 @media (max-width: 380px) {
   .mobile-dpad {
-    grid-template-columns: repeat(3, 58px);
-    grid-template-rows: repeat(3, 58px);
-    gap: 4px;
+    grid-template-columns: repeat(3, 46px);
+    grid-template-rows: repeat(3, 46px);
+    gap: 3px;
   }
 
-  .mobile-dpad-button,
-  .mobile-interact-button {
-    width: 58px;
-    height: 58px;
-    min-width: 58px;
-    min-height: 58px;
-    font-size: 1.05rem;
+  .mobile-dpad-button {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    font-size: 0.92rem;
   }
 
-  .mobile-interact-button {
-    font-size: 0.58rem;
-    padding: 0.15rem 0.25rem;
+  .mobile-interact-pill {
+    font-size: 0.62rem;
+    padding: 0.32rem 0.55rem;
+    max-width: 92px;
   }
 }
 
@@ -2871,6 +2889,7 @@ input:focus-visible {
 .map-camera-viewport {
   width: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 .status-line {
@@ -3059,7 +3078,7 @@ input:focus-visible {
 
 .mobile-controls .arcade-button,
 .mobile-dpad .arcade-button,
-.mobile-interact-button.arcade-button {
+.mobile-interact-pill.arcade-button {
   border-color: rgba(214, 168, 82, 0.55);
   background-color: rgba(12, 14, 15, 0.98);
   background-image:
