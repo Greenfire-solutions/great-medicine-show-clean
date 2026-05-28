@@ -65,6 +65,29 @@ Shortcut while editing: **Apply & publish to live site** does both steps at once
 
 Confirm save worked: green success message + new commit on GitHub → Deployments on Vercel.
 
+## Fix: "Resource not accessible by personal access token" (403)
+
+Your **GITHUB_TOKEN** can read but **cannot write** to the repo (or it points at the wrong repo).
+
+### Create a new fine-grained token
+
+1. GitHub → **Settings** → **Developer settings** → **Fine-grained tokens** → **Generate new token**
+2. **Repository access:** Only **great-medicine-show-clean** (under Greenfire-solutions)
+3. **Permissions → Repository permissions → Contents:** **Read and write** (required)
+4. Generate and copy the token
+
+### Update Vercel
+
+1. **Settings → Environment Variables**
+2. Edit **GITHUB_TOKEN** → paste the **new** token
+3. Confirm:
+   - `GITHUB_OWNER` = `Greenfire-solutions`
+   - `GITHUB_REPO` = `great-medicine-show-clean`
+   - `GITHUB_BRANCH` = `main`
+4. **Deployments → Redeploy** (required after changing the token)
+
+Then try **Publish courses to live site** again.
+
 ## Local dev
 
 Use **`npx vercel dev`** (not `npm run dev`). Add a `.env` file with the same variables for local testing.

@@ -73,6 +73,18 @@ export async function updateJsonFileOnGithub(fileKey, contentObject) {
 
   if (!putResponse.ok) {
     const errBody = await putResponse.text()
+    if (putResponse.status === 403) {
+      throw new Error(
+        'GitHub denied write access (403). Your GITHUB_TOKEN cannot update this repo. ' +
+          'Create a new fine-grained token with Contents: Read and write on ' +
+          `${owner}/${repo}, update Vercel env vars, and redeploy. Details: ${errBody}`
+      )
+    }
+    if (putResponse.status === 404) {
+      throw new Error(
+        `GitHub repo or file not found (404). Check GITHUB_OWNER=${owner}, GITHUB_REPO=${repo}, GITHUB_BRANCH=${branch}.`
+      )
+    }
     throw new Error(`GitHub write failed (${putResponse.status}): ${errBody}`)
   }
 
