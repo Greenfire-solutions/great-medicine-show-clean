@@ -1,0 +1,85 @@
+const ALLOWED_PATHS = {
+  store: 'src/data/storeData.json',
+  courses: 'src/data/coursesData.json',
+  shows: 'src/data/showsData.json',
+  booking: 'src/data/bookingOffersData.json',
+  downloadCodes: 'src/data/downloadCodesData.json'
+}
+
+function getGithubConfig() {
+  const token = process.env.GITHUB_TOKEN
+  const owner = process.env.GITHUB_OWNER
+  const repo = process.env.GITHUB_REPO
+  const branch = process.env.GITHUB_BRANCH || 'main'
+
+  if (!token || !owner || !repo) {
+    throw new Error('GitHub environment variables are not configured on the server.')
+  }
+
+  return { token, owner, repo, branch }
+}
+
+function githubHeaders(token) {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent': 'great-medicine-show-admin'
+  }
+}
+
+export function getAllowedPath(fileKey) {
+  return ALLOWED_PATHS[fileKey] || null
+}
+
+export async function updateJsonFileOnGithub(fileKey, contentObject) {
+  const path = getAllowedPath(fileKey)
+  if (!path) {
+    throw new Error('Invalid content file key.')
+  }
+
+  const { token, owner, repo, branch } = getGithubConfig()
+  const contentsUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`
+
+  const getResponse = await fetch(`${contentsUrl}?ref=${encodeURIComponent(branch)}`, {
+    headers: githubHeaders(token)
+  })
+
+  let sha
+  if (getResponse.status === 200) {
+    const existing = await getResponse.json()
+    sha = existing.sha
+  } else if (getResponse.status !== 404) {
+    const errBody = await getResponse.text()
+    throw new Error(`GitHub read failed (${getResponse.status}): ${errBody}`)
+  }
+
+  const fileBody = `${JSON.stringify(contentObject, null, 2)}\n`
+  const putBody = {
+    message: `Admin: update ${path}`,
+    content: Buffer.from(fileBody, 'utf8').toString('base64'),
+    branch
+  }
+  if (sha) putBody.sha = sha
+
+  const putResponse = await fetch(contentsUrl, {
+    method: 'PUT',
+    headers: {
+      ...githubHeaders(token),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(putBody)
+  })
+
+  if (!putResponse.ok) {
+    const errBody = await putResponse.text()
+    throw new Error(`GitHub write failed (${putResponse.status}): ${errBody}`)
+  }
+
+  const result = await putResponse.json()
+  return {
+    path,
+    commitSha: result.commit?.sha,
+    commitUrl: result.commit?.html_url
+  }
+}

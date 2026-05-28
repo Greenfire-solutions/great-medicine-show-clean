@@ -1,8 +1,16 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { musicData } from './data/musicData'
-import { storeItems } from './data/storeData'
-import { upcomingShows, bookingOffers } from './data/showsData'
+import { getHallStoreItems, getStoreItemsByTemple, storeItems } from './data/storeData'
 import { courses } from './data/coursesData'
+import { getCodeContainersByTemple } from './data/downloadCodesData'
+import { bookingOffers, upcomingShows } from './data/showsData'
+import AdminDashboard from './components/admin/AdminDashboard'
+import {
+  getItemDisplayName,
+  getItemUrl,
+  resolveItemAction,
+  TEMPLE_VAULT_TITLES
+} from './lib/contentHelpers'
 import {
   artistLinks,
   epkContact,
@@ -15,6 +23,16 @@ import {
 const guilds = ['Fire Guild', 'Water Guild', 'Earth Guild', 'Air Guild']
 const saveKey = 'gms-cyber-hall-profile'
 const stepAmount = 2.5
+
+const TEMPLE_SHOP_MAP_KEYS = new Set([
+  'hall',
+  'civilxLab',
+  'fireTemple',
+  'waterTemple',
+  'earthTemple',
+  'airTemple',
+  'courseAcademy'
+])
 
 function OnboardingCosmosBackground() {
   return (
@@ -295,6 +313,159 @@ const getSavedProfile = () => {
   }
 }
 
+function ContentItemButton({ item, onInquire }) {
+  const action = resolveItemAction(item)
+
+  if (action.kind === 'disabled') {
+    return (
+      <button type="button" className="arcade-button" disabled>
+        {action.label || 'Coming Soon'}
+      </button>
+    )
+  }
+
+  if (action.kind === 'link') {
+    return (
+      <a className="arcade-button" href={action.href} target="_blank" rel="noopener noreferrer">
+        {action.label}
+      </a>
+    )
+  }
+
+  if (action.kind === 'mailto') {
+    return (
+      <a className="arcade-button" href={action.href}>
+        {action.label}
+      </a>
+    )
+  }
+
+  return (
+    <button type="button" className="arcade-button" onClick={onInquire}>
+      {action.label}
+    </button>
+  )
+}
+
+function ContentItemCard({ item, onInquire }) {
+  const linkUrl = getItemUrl(item)
+  const name = getItemDisplayName(item)
+
+  return (
+    <article className="overlay-card">
+      {linkUrl ? (
+        <a href={linkUrl} target="_blank" rel="noopener noreferrer" className="store-item-image-link">
+          <img src={item.image} alt={name} className="overlay-image" />
+        </a>
+      ) : (
+        <img src={item.image} alt={name} className="overlay-image" />
+      )}
+      <h4>{name}</h4>
+      <p className="small">
+        {item.category}
+        {item.price ? ` · ${item.price}` : ''}
+      </p>
+      <p className="small">{item.description}</p>
+      <ContentItemButton item={item} onInquire={onInquire} />
+    </article>
+  )
+}
+
+/**
+ * Light front-end code gate — not secure for sensitive paid files.
+ * Codes are stored in downloadCodesData.js and visible in the browser bundle.
+ */
+function CodeUnlockCard({ container }) {
+  const [codeInput, setCodeInput] = useState('')
+  const [unlocked, setUnlocked] = useState(false)
+  const [unlockError, setUnlockError] = useState('')
+
+  const tryUnlock = () => {
+    if (codeInput.trim().toLowerCase() === container.code.trim().toLowerCase()) {
+      setUnlocked(true)
+      setUnlockError('')
+      return
+    }
+    setUnlockError('Code not recognized. Check your email and try again.')
+  }
+
+  return (
+    <article className="overlay-card code-unlock-card">
+      {container.image ? <img src={container.image} alt="" className="overlay-image" /> : null}
+      <h4>{container.title}</h4>
+      <p className="small">{container.description}</p>
+      {!unlocked ? (
+        <>
+          <label className="code-unlock-field">
+            <span className="small">Enter unlock code</span>
+            <input
+              type="text"
+              value={codeInput}
+              onChange={(e) => setCodeInput(e.target.value)}
+              placeholder="Your code"
+              autoComplete="off"
+            />
+          </label>
+          {unlockError && <p className="small code-unlock-error">{unlockError}</p>}
+          <button type="button" className="arcade-button" onClick={tryUnlock}>
+            Unlock
+          </button>
+        </>
+      ) : (
+        <>
+          <h4>{container.unlockedTitle}</h4>
+          <p className="small">{container.unlockedDescription}</p>
+          <a
+            className="arcade-button"
+            href={container.unlockedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {container.buttonText || 'Open Link'}
+          </a>
+        </>
+      )}
+    </article>
+  )
+}
+
+function TempleVaultPanel({ templeKey, products, codeContainers, onInquire }) {
+  const title = TEMPLE_VAULT_TITLES[templeKey] || 'Temple Vault'
+  const hasContent = products.length > 0 || codeContainers.length > 0
+
+  return (
+    <article className="arcade-panel section-panel temple-shop-panel">
+      <h3 className="glyph-title">{title}</h3>
+      <p className="small">Offerings and downloads for this location.</p>
+      <div className="glowing-divider" />
+      {!hasContent ? (
+        <p className="small">No offerings in this vault yet. Edit the data files to add products or code unlocks.</p>
+      ) : (
+        <>
+          {products.length > 0 && (
+            <div className="overlay-grid temple-shop-grid">
+              {products.map((item) => (
+                <ContentItemCard key={item.id} item={item} onInquire={() => onInquire(item)} />
+              ))}
+            </div>
+          )}
+          {codeContainers.length > 0 && (
+            <>
+              {products.length > 0 && <div className="glowing-divider" />}
+              <h4 className="glyph-title">Code unlock</h4>
+              <div className="overlay-grid temple-shop-grid">
+                {codeContainers.map((container) => (
+                  <CodeUnlockCard key={container.id} container={container} />
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </article>
+  )
+}
+
 function App() {
   const savedProfile = useMemo(getSavedProfile, [])
   const [step, setStep] = useState(savedProfile ? 4 : 1)
@@ -351,15 +522,38 @@ function App() {
       return matchesCategory && matchesSearch
     })
 
-  const storeCategories = ['All', ...new Set(storeItems.map((item) => item.category))]
-  const filteredStoreItems = storeItems.filter((item) => {
-    const categoryMatch = storeCategory === 'All' || item.category === storeCategory
-    const searchText = `${item.name} ${item.category} ${item.description}`.toLowerCase()
-    return categoryMatch && searchText.includes(storeSearch.toLowerCase())
-  })
+  const isAdminPreview = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    return new URLSearchParams(window.location.search).get('admin') === 'true'
+  }, [])
+
+  const storeCategories = useMemo(
+    () => ['All', ...new Set(getHallStoreItems(storeItems).map((item) => item.category))],
+    []
+  )
+  const filteredStoreItems = useMemo(() => {
+    return getHallStoreItems(storeItems)
+      .filter((item) => {
+        const categoryMatch = storeCategory === 'All' || item.category === storeCategory
+        const searchText = `${getItemDisplayName(item)} ${item.category} ${item.description}`.toLowerCase()
+        return categoryMatch && searchText.includes(storeSearch.toLowerCase())
+      })
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+  }, [storeSearch, storeCategory])
+
+  const templeVaultProducts = useMemo(() => {
+    if (!TEMPLE_SHOP_MAP_KEYS.has(currentMap)) return []
+    return getStoreItemsByTemple(currentMap)
+  }, [currentMap])
+
+  const templeVaultCodes = useMemo(() => {
+    if (!TEMPLE_SHOP_MAP_KEYS.has(currentMap)) return []
+    return getCodeContainersByTemple(currentMap)
+  }, [currentMap])
 
   const courseCategories = ['All', ...new Set(courses.map((course) => course.category))]
   const filteredCourses = courses.filter((course) => {
+    if (course.hidden) return false
     const categoryMatch = courseCategory === 'All' || course.category === courseCategory
     const searchText = `${course.title} ${course.category} ${course.level} ${course.description}`.toLowerCase()
     return categoryMatch && searchText.includes(courseSearch.toLowerCase())
@@ -635,6 +829,14 @@ function App() {
     const inquiryMessage = `Interested Course: ${course.title}\nSelected Option: ${option.type} (${option.price})`
     openBookingForm(inquirySubject, inquiryMessage)
     setShowCourseOptionPicker(false)
+  }
+
+  const openStoreProductInquiry = (item) => {
+    const name = getItemDisplayName(item)
+    openBookingForm(
+      item.emailSubject || `Product Inquiry: ${name}`,
+      `Interested in: ${name}\nPrice: ${item.price || 'TBD'}\n${item.description || ''}`
+    )
   }
 
   const updateBookingForm = (field, value) => {
@@ -1331,13 +1533,23 @@ function App() {
                 )}
             </div>
 
-            <article className="arcade-panel section-panel">
-              <h3 className="glyph-title">{activeSection}</h3>
-              <p className="arcade-copy">
-                Placeholder content for <strong>{activeSection}</strong>. This panel will evolve into full rooms,
-                pages, and quests in future updates.
-              </p>
-            </article>
+            {TEMPLE_SHOP_MAP_KEYS.has(currentMap) ? (
+              <TempleVaultPanel
+                templeKey={currentMap}
+                products={templeVaultProducts}
+                codeContainers={templeVaultCodes}
+                onInquire={openStoreProductInquiry}
+              />
+            ) : (
+              <article className="arcade-panel section-panel">
+                <h3 className="glyph-title">{activeSection}</h3>
+                <p className="arcade-copy">
+                  Placeholder content for <strong>{activeSection}</strong>. This panel will evolve into full rooms,
+                  pages, and quests in future updates.
+                </p>
+              </article>
+            )}
+
           </div>
         </section>
       )}
@@ -1450,19 +1662,11 @@ function App() {
                     <p className="small">No products found.</p>
                   ) : (
                     filteredStoreItems.map((item) => (
-                      <article key={item.id} className="overlay-card">
-                        <img src={item.image} alt={item.name} className="overlay-image" />
-                        <h4>{item.name}</h4>
-                        <p className="small">{item.category} · {item.price}</p>
-                        <p className="small">{item.description}</p>
-                        {item.url ? (
-                          <a className="arcade-button" href={item.url} target="_blank" rel="noreferrer">
-                            {item.buttonText || 'View Item'}
-                          </a>
-                        ) : (
-                          <button className="arcade-button">Coming Soon</button>
-                        )}
-                      </article>
+                      <ContentItemCard
+                        key={item.id}
+                        item={item}
+                        onInquire={() => openStoreProductInquiry(item)}
+                      />
                     ))
                   )}
                 </div>
@@ -1475,42 +1679,47 @@ function App() {
                 <h3 className="glyph-title">Shows & Booking</h3>
                 <div className="glowing-divider" />
                 <div className="shows-grid">
-                  {upcomingShows.map((show) => (
+                  {upcomingShows.filter((s) => !s.hidden).map((show) => (
                     <article key={show.id} className="show-card">
-                      {show.flyerImage ? (
-                        <img src={show.flyerImage} alt={show.title} className="show-flyer" />
+                      {show.flyerImage || show.image ? (
+                        <img src={show.flyerImage || show.image} alt={show.title} className="show-flyer" />
                       ) : (
                         <div className="show-flyer show-flyer-placeholder">Flyer coming soon.</div>
                       )}
                       <div className="show-body">
                         <h4>{show.title}</h4>
-                        <p className="small">{show.date} · {show.location}</p>
+                        <p className="small">
+                          {show.date}
+                          {show.time ? ` · ${show.time}` : ''} · {show.location}
+                        </p>
                         <p className="small">{show.description}</p>
-                        {show.ticketUrl ? (
-                          <a className="arcade-button" href={show.ticketUrl} target="_blank" rel="noreferrer">
-                            {show.ticketButtonText || 'Buy Tickets'}
-                          </a>
-                        ) : (
-                          <button className="arcade-button">Tickets coming soon</button>
-                        )}
+                        <ContentItemButton
+                          item={show}
+                          onInquire={() =>
+                            openBookingForm(show.emailSubject || `Tickets: ${show.title}`)
+                          }
+                        />
                       </div>
                     </article>
                   ))}
                 </div>
                 <h4 className="glyph-title">Book The Great Medicine Show</h4>
                 <div className="overlay-grid">
-                  {bookingOffers.map((offer) => (
+                  {bookingOffers.filter((o) => !o.hidden).map((offer) => (
                     <article key={offer.id} className="overlay-card">
-                      {offer.iconImage ? (
-                        <img src={offer.iconImage} alt={offer.title} className="booking-icon" />
+                      {offer.iconImage || offer.image ? (
+                        <img src={offer.iconImage || offer.image} alt={offer.title} className="booking-icon" />
                       ) : (
                         <div className="booking-icon booking-icon-placeholder" aria-hidden="true" />
                       )}
                       <h4>{offer.title}</h4>
                       <p className="small">{offer.description}</p>
-                      <button className="arcade-button" onClick={() => openBookingForm(offer.bookingType || offer.title)}>
-                        Start Inquiry
-                      </button>
+                      <ContentItemButton
+                        item={offer}
+                        onInquire={() =>
+                          openBookingForm(offer.inquirySubject || offer.bookingType || offer.title)
+                        }
+                      />
                     </article>
                   ))}
                 </div>
@@ -1536,6 +1745,16 @@ function App() {
                         <article key={option.type} className="overlay-card">
                           <h4>{option.type}</h4>
                           <p className="small">{option.price}</p>
+                          <ContentItemButton
+                            item={{
+                              ...option,
+                              name: option.type,
+                              emailSubject:
+                                option.emailSubject ||
+                                `${selectedCourse.contactSubject} — ${option.type}`
+                            }}
+                            onInquire={() => openCourseInquiry(selectedCourse, option)}
+                          />
                         </article>
                       ))}
                     </div>
@@ -1561,15 +1780,23 @@ function App() {
                       </button>
                     </div>
                     {showCourseOptionPicker && (
-                      <div className="dialogue-actions">
+                      <div className="dialogue-actions course-option-actions">
                         {selectedCourse.priceOptions.map((option) => (
-                          <button
-                            key={option.type}
-                            className="arcade-button"
-                            onClick={() => openCourseInquiry(selectedCourse, option)}
-                          >
-                            {option.type} — {option.price}
-                          </button>
+                          <div key={option.type} className="course-option-row">
+                            <span className="small course-option-label">
+                              {option.type} — {option.price}
+                            </span>
+                            <ContentItemButton
+                              item={{
+                                ...option,
+                                name: option.type,
+                                emailSubject:
+                                  option.emailSubject ||
+                                  `${selectedCourse.contactSubject} — ${option.type}`
+                              }}
+                              onInquire={() => openCourseInquiry(selectedCourse, option)}
+                            />
+                          </div>
                         ))}
                       </div>
                     )}
@@ -1769,6 +1996,8 @@ function App() {
         </div>
       )}
 
+
+      {isAdminPreview && <AdminDashboard />}
 
       <footer className="footer">Boot OK</footer>
     </div>

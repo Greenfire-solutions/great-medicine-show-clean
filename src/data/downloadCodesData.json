@@ -1,0 +1,30 @@
+{
+  "downloadCodeContainers": [
+    {
+      "id": "unlock-fire-demo",
+      "title": "Fire Temple Download Vault",
+      "description": "Enter the code from your purchase email to unlock the beat pack folder.",
+      "code": "FIRE-DEMO",
+      "unlockedTitle": "Fire Beat Pack — Google Drive",
+      "unlockedDescription": "Your download folder. Save a copy to your device.",
+      "unlockedUrl": "https://drive.google.com/",
+      "buttonText": "Open Google Drive Folder",
+      "templeLocation": "fireTemple",
+      "image": "https://placehold.co/320x220/2a2d1f/d9f5aa?text=Code+Vault",
+      "hidden": false
+    },
+    {
+      "id": "unlock-water-demo",
+      "title": "Water Temple Healing Pack",
+      "description": "Enter your unlock code to access ambient and emotional track downloads.",
+      "code": "WATER-DEMO",
+      "unlockedTitle": "Water Pack — Downloads",
+      "unlockedDescription": "Streaming-friendly download links inside the folder.",
+      "unlockedUrl": "https://drive.google.com/",
+      "buttonText": "Open Downloads",
+      "templeLocation": "waterTemple",
+      "image": "https://placehold.co/320x220/1f2e3f/a9f0ff?text=Water+Vault",
+      "hidden": false
+    }
+  ]
+}

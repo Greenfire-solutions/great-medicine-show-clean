@@ -1,0 +1,44 @@
+{
+  "upcomingShows": [
+    {
+      "id": "show-1",
+      "title": "Cyber Garden Live Set",
+      "category": "Live Show",
+      "templeLocation": "hall",
+      "date": "2026-08-12",
+      "time": "",
+      "location": "Portland, OR",
+      "description": "A cinematic set with projection-mapped temple visuals.",
+      "image": "https://placehold.co/720x420/2b2350/cff5ff?text=Cyber+Garden+Live+Set",
+      "flyerImage": "https://placehold.co/720x420/2b2350/cff5ff?text=Cyber+Garden+Live+Set",
+      "url": "",
+      "emailSubject": "Tickets: Cyber Garden Live Set",
+      "actionType": "coming-soon",
+      "buttonText": "Buy Tickets",
+      "hidden": false,
+      "comingSoon": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "show-2",
+      "title": "Elemental Hall Night",
+      "category": "Live Show",
+      "templeLocation": "global",
+      "date": "2026-10-04",
+      "time": "",
+      "location": "Austin, TX",
+      "description": "Collaborative music ritual with guest performers.",
+      "image": "",
+      "flyerImage": "",
+      "url": "",
+      "emailSubject": "Tickets: Elemental Hall Night",
+      "actionType": "coming-soon",
+      "buttonText": "Buy Tickets",
+      "ticketUrl": "",
+      "ticketButtonText": "Buy Tickets",
+      "hidden": false,
+      "comingSoon": true,
+      "sortOrder": 2
+    }
+  ]
+}
