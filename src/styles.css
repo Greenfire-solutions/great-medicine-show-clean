@@ -2221,6 +2221,51 @@ input:focus-visible {
   opacity: 0.8;
 }
 
+.admin-workflow-box {
+  margin-bottom: 0.85rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(186, 140, 255, 0.35);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.admin-workflow-steps {
+  margin: 0.35rem 0 0.65rem;
+  padding-left: 1.2rem;
+}
+
+.admin-publish-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.admin-publish-btn {
+  border-color: rgba(159, 233, 200, 0.75) !important;
+  box-shadow: 0 0 14px rgba(159, 233, 200, 0.25);
+  font-weight: 600;
+}
+
+.admin-publish-hint {
+  opacity: 0.85;
+}
+
+.admin-editor-hint {
+  margin-top: 0.5rem;
+  opacity: 0.88;
+}
+
+.admin-sticky-publish {
+  position: sticky;
+  bottom: 0;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(8, 12, 24, 0.95);
+  border-top: 1px solid rgba(159, 233, 255, 0.35);
+  display: flex;
+  justify-content: center;
+}
+
 .admin-danger-btn {
   border-color: rgba(255, 120, 120, 0.55) !important;
 }

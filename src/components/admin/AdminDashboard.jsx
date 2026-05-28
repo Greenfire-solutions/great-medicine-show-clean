@@ -266,10 +266,9 @@ export default function AdminDashboard() {
     setEditing((prev) => (prev ? { ...prev, item: { ...prev.item, [field]: value } } : prev))
   }
 
-  const applyEdit = () => {
-    if (!editing) return
+  const applyEditToDraft = () => {
+    if (!editing) return null
     const fileKey = editing.fileKey
-    const cfg = ADMIN_CONTENT_FILES[fileKey]
     const list = [...getArrayForTab(fileKey)]
 
     let item = { ...editing.item }
@@ -285,7 +284,7 @@ export default function AdminDashboard() {
 
     if (!item.id) {
       setValidationError('ID is required')
-      return
+      return null
     }
 
     if (editing.index == null) list.push(item)
@@ -293,6 +292,63 @@ export default function AdminDashboard() {
 
     setArrayForTab(fileKey, list)
     setEditing(null)
+    setValidationError('')
+    return fileKey
+  }
+
+  const applyEdit = () => {
+    applyEditToDraft()
+  }
+
+  const buildItemFromEditing = () => {
+    if (!editing) return null
+    let item = { ...editing.item }
+    if (editing.fileKey === 'courses') {
+      item = {
+        ...item,
+        whatYouWillLearn: linesToArray(item.whatYouWillLearnText),
+        whatYouGet: linesToArray(item.whatYouGetText)
+      }
+      delete item.whatYouWillLearnText
+      delete item.whatYouGetText
+    }
+    if (!item.id) {
+      setValidationError('ID is required')
+      return null
+    }
+    return item
+  }
+
+  const applyEditAndPublish = async () => {
+    if (!editing) return
+    const fileKey = editing.fileKey
+    const cfg = ADMIN_CONTENT_FILES[fileKey]
+    const item = buildItemFromEditing()
+    if (!item) return
+
+    const list = [...getArrayForTab(fileKey)]
+    if (editing.index == null) list.push(item)
+    else list[editing.index] = item
+
+    const nextDraft = { ...drafts[fileKey], [cfg.dataKey]: list }
+    setDrafts((prev) => ({ ...prev, [fileKey]: nextDraft }))
+    setEditing(null)
+    setValidationError('')
+
+    setSaving(true)
+    setSaveError('')
+    setSaveMessage('')
+    try {
+      const result = await saveAdminContent(fileKey, nextDraft, passwordRef.current)
+      setSaveMessage(result.message || SAVE_SUCCESS_NOTE)
+      if (result.github?.commitUrl) {
+        setSaveMessage(`${SAVE_SUCCESS_NOTE} Commit: ${result.github.commitUrl}`)
+      }
+    } catch (err) {
+      setSaveError(err.message || 'Save failed')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const duplicateItem = (fileKey, item) => {
@@ -673,6 +729,7 @@ export default function AdminDashboard() {
   }
 
   const activeFileKey = tab === 'temples' ? null : tab
+  const activeConfig = activeFileKey ? ADMIN_CONTENT_FILES[activeFileKey] : null
 
   return (
     <div className="admin-dashboard-backdrop" role="dialog" aria-label="Admin dashboard">
@@ -683,7 +740,35 @@ export default function AdminDashboard() {
             Exit admin
           </a>
         </header>
-        <p className="small admin-save-note">{SAVE_SUCCESS_NOTE}</p>
+
+        <div className="admin-workflow-box arcade-panel">
+          <h4 className="glyph-title">How publishing works</h4>
+          <ol className="small admin-workflow-steps">
+            <li>
+              <strong>Edit</strong> an item, then click <strong>Apply to draft</strong> (or use{' '}
+              <strong>Apply &amp; publish</strong> below).
+            </li>
+            <li>
+              <strong>Publish to live site</strong> — commits to GitHub and triggers Vercel redeploy (1–2 min).
+            </li>
+          </ol>
+          {activeConfig ? (
+            <div className="admin-publish-row">
+              <button
+                type="button"
+                className="arcade-button admin-publish-btn"
+                disabled={saving}
+                onClick={() => handleSaveTab(activeFileKey)}
+              >
+                {saving ? 'Publishing…' : `Publish ${activeConfig.label} to live site`}
+              </button>
+              <span className="small admin-publish-hint">Saves {activeConfig.githubPath} → GitHub → Vercel rebuild</span>
+            </div>
+          ) : (
+            <p className="small">Open Products, Courses, Shows, Booking, or Code Unlocks to publish.</p>
+          )}
+        </div>
+
         <nav className="admin-tabs">
           {ADMIN_TAB_ORDER.map((key) => (
             <button
@@ -707,8 +792,8 @@ export default function AdminDashboard() {
               <button type="button" className="arcade-button" onClick={() => startEdit('store', emptyProduct(), null)}>
                 Add product
               </button>
-              <button type="button" className="arcade-button" disabled={saving} onClick={() => handleSaveTab('store')}>
-                {saving ? 'Saving…' : 'Save products to GitHub'}
+              <button type="button" className="arcade-button admin-publish-btn" disabled={saving} onClick={() => handleSaveTab('store')}>
+                {saving ? 'Publishing…' : 'Publish products to live site'}
               </button>
             </div>
             {renderList('store', storeItems, (i) => i.name)}
@@ -720,8 +805,8 @@ export default function AdminDashboard() {
               <button type="button" className="arcade-button" onClick={() => startEdit('courses', emptyCourse(), null)}>
                 Add course
               </button>
-              <button type="button" className="arcade-button" disabled={saving} onClick={() => handleSaveTab('courses')}>
-                {saving ? 'Saving…' : 'Save courses to GitHub'}
+              <button type="button" className="arcade-button admin-publish-btn" disabled={saving} onClick={() => handleSaveTab('courses')}>
+                {saving ? 'Publishing…' : 'Publish courses to live site'}
               </button>
             </div>
             {renderList('courses', courses, (i) => i.title)}
@@ -733,8 +818,8 @@ export default function AdminDashboard() {
               <button type="button" className="arcade-button" onClick={() => startEdit('shows', emptyShow(), null)}>
                 Add show
               </button>
-              <button type="button" className="arcade-button" disabled={saving} onClick={() => handleSaveTab('shows')}>
-                {saving ? 'Saving…' : 'Save shows to GitHub'}
+              <button type="button" className="arcade-button admin-publish-btn" disabled={saving} onClick={() => handleSaveTab('shows')}>
+                {saving ? 'Publishing…' : 'Publish shows to live site'}
               </button>
             </div>
             {renderList('shows', shows, (i) => i.title)}
@@ -746,8 +831,8 @@ export default function AdminDashboard() {
               <button type="button" className="arcade-button" onClick={() => startEdit('booking', emptyBooking(), null)}>
                 Add booking offer
               </button>
-              <button type="button" className="arcade-button" disabled={saving} onClick={() => handleSaveTab('booking')}>
-                {saving ? 'Saving…' : 'Save booking to GitHub'}
+              <button type="button" className="arcade-button admin-publish-btn" disabled={saving} onClick={() => handleSaveTab('booking')}>
+                {saving ? 'Publishing…' : 'Publish booking to live site'}
               </button>
             </div>
             {renderList('booking', booking, (i) => i.title)}
@@ -759,8 +844,8 @@ export default function AdminDashboard() {
               <button type="button" className="arcade-button" onClick={() => startEdit('downloadCodes', emptyCodeContainer(), null)}>
                 Add code container
               </button>
-              <button type="button" className="arcade-button" disabled={saving} onClick={() => handleSaveTab('downloadCodes')}>
-                {saving ? 'Saving…' : 'Save code unlocks to GitHub'}
+              <button type="button" className="arcade-button admin-publish-btn" disabled={saving} onClick={() => handleSaveTab('downloadCodes')}>
+                {saving ? 'Publishing…' : 'Publish code unlocks to live site'}
               </button>
             </div>
             {renderList('downloadCodes', codes, (i) => i.title)}
@@ -807,21 +892,42 @@ export default function AdminDashboard() {
                 </button>
               </div>
             ) : (
-              <div className="admin-form-actions">
-                <button type="button" className="arcade-button" onClick={applyEdit}>
-                  Apply to draft
-                </button>
-                <button type="button" className="arcade-button" onClick={() => setEditing(null)}>
-                  Cancel
-                </button>
-              </div>
+              <>
+                <div className="admin-form-actions">
+                  <button type="button" className="arcade-button" onClick={applyEdit}>
+                    1. Apply to draft
+                  </button>
+                  <button
+                    type="button"
+                    className="arcade-button admin-publish-btn"
+                    disabled={saving}
+                    onClick={applyEditAndPublish}
+                  >
+                    {saving ? 'Publishing…' : '2. Apply & publish to live site'}
+                  </button>
+                  <button type="button" className="arcade-button" onClick={() => setEditing(null)}>
+                    Cancel
+                  </button>
+                </div>
+                <p className="small admin-editor-hint">
+                  Draft = preview in this admin only. Visitors see changes after you publish (GitHub + Vercel
+                  redeploy).
+                </p>
+              </>
             )}
           </div>
         )}
-        {activeFileKey && (
-          <p className="small admin-footer-note">
-            Changes are not public until you click Save and Vercel finishes redeploying from the GitHub commit.
-          </p>
+        {activeFileKey && activeConfig && (
+          <div className="admin-sticky-publish">
+            <button
+              type="button"
+              className="arcade-button admin-publish-btn"
+              disabled={saving}
+              onClick={() => handleSaveTab(activeFileKey)}
+            >
+              {saving ? 'Publishing…' : `Publish ${activeConfig.label} to live site`}
+            </button>
+          </div>
         )}
       </section>
     </div>

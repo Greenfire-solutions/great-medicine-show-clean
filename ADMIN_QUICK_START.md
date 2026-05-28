@@ -56,6 +56,15 @@ https://YOUR-SITE.vercel.app/?admin=true
 
 Use the exact value you set for `ADMIN_PASSWORD`.
 
+## Editing workflow (two steps)
+
+1. **Apply to draft** — updates the list in admin only (visitors still see the old site).
+2. **Publish … to live site** — commits JSON to GitHub; Vercel redeploys in ~1–2 minutes.
+
+Shortcut while editing: **Apply & publish to live site** does both steps at once.
+
+Confirm save worked: green success message + new commit on GitHub → Deployments on Vercel.
+
 ## Local dev
 
 Use **`npx vercel dev`** (not `npm run dev`). Add a `.env` file with the same variables for local testing.
