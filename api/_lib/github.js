@@ -10,7 +10,8 @@ function getGithubConfig() {
   const token = process.env.GITHUB_TOKEN
   const owner = process.env.GITHUB_OWNER
   const repo = process.env.GITHUB_REPO
-  const branch = process.env.GITHUB_BRANCH || 'main'
+  // GitHub branch names are case-sensitive; default branch is usually "main" not "Main"
+  const branch = (process.env.GITHUB_BRANCH || 'main').trim()
 
   if (!token || !owner || !repo) {
     throw new Error('GitHub environment variables are not configured on the server.')
@@ -49,7 +50,13 @@ export async function updateJsonFileOnGithub(fileKey, contentObject) {
   if (getResponse.status === 200) {
     const existing = await getResponse.json()
     sha = existing.sha
-  } else if (getResponse.status !== 404) {
+  } else if (getResponse.status === 404) {
+    throw new Error(
+      `GitHub branch or file not found (404). Use GITHUB_BRANCH=main (lowercase). ` +
+        `Current: owner=${owner}, repo=${repo}, branch=${branch}, path=${path}. ` +
+        'If branch is correct, confirm the JSON file exists on GitHub after your last deploy.'
+    )
+  } else if (!getResponse.ok) {
     const errBody = await getResponse.text()
     throw new Error(`GitHub read failed (${getResponse.status}): ${errBody}`)
   }

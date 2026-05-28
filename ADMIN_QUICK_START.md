@@ -83,10 +83,29 @@ Your **GITHUB_TOKEN** can read but **cannot write** to the repo (or it points at
 3. Confirm:
    - `GITHUB_OWNER` = `Greenfire-solutions`
    - `GITHUB_REPO` = `great-medicine-show-clean`
-   - `GITHUB_BRANCH` = `main`
+   - `GITHUB_BRANCH` = `main` (**lowercase** — not `Main`)
 4. **Deployments → Redeploy** (required after changing the token)
 
 Then try **Publish courses to live site** again.
+
+## Fix: "GitHub repo or file not found" (404)
+
+Most common cause: **`GITHUB_BRANCH` is `Main` instead of `main`**. GitHub branch names are case-sensitive.
+
+In Vercel, set:
+
+```text
+GITHUB_BRANCH = main
+```
+
+(all lowercase)
+
+Also confirm:
+
+- `GITHUB_OWNER` = `Greenfire-solutions`
+- `GITHUB_REPO` = `great-medicine-show-clean`
+
+Redeploy after changing env vars, then publish again.
 
 ## Local dev
 
