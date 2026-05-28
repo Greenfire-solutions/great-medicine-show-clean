@@ -11,7 +11,7 @@
       "priceOptions": [
         {
           "type": "Recorded Video",
-          "price": "$100",
+          "price": "$111",
           "url": "",
           "actionType": "coming-soon",
           "emailSubject": "Course: Storytelling Through Sound — Recorded",
@@ -20,7 +20,7 @@
         },
         {
           "type": "Live Session",
-          "price": "$200",
+          "price": "$222",
           "url": "",
           "actionType": "email",
           "emailSubject": "Course: Storytelling Through Sound — Live Session",
