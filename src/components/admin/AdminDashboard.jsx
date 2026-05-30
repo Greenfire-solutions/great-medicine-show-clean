@@ -168,7 +168,18 @@ function AdminLogin({ onSuccess }) {
           <span>Admin password</span>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </label>
-        {error && <p className="admin-error">{error}</p>}
+        {error && (
+          <p className="admin-error">
+            {error}
+            {error.includes('Invalid admin password') && (
+              <>
+                {' '}
+                Open <code>/api/admin/ping</code> on your site — if <code>adminPasswordSet</code> is false, add{' '}
+                <code>ADMIN_PASSWORD</code> in Vercel and redeploy.
+              </>
+            )}
+          </p>
+        )}
         <button type="submit" className="arcade-button" disabled={busy}>
           {busy ? 'Checking…' : 'Enter Admin'}
         </button>
