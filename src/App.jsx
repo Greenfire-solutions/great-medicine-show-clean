@@ -293,6 +293,16 @@ const mapDefinitions = {
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
 
+/** Don't steal WASD/arrow keys while typing in forms, admin, or overlays. */
+function shouldIgnoreGameKeyboard(event) {
+  const target = event.target
+  if (!target || typeof target !== 'object') return false
+  const tag = target.tagName?.toLowerCase()
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return true
+  if (target.isContentEditable) return true
+  return false
+}
+
 const hallShortcuts = {
   music: { overlay: 'music', section: 'Music Hall' },
   store: { overlay: 'store', section: 'Store' },
@@ -1034,15 +1044,18 @@ function App() {
     if (step !== 4) return
 
     const handleKeyDown = (event) => {
-      if (epkOpen) return
-      const key = event.key.toLowerCase()
-      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd', 'enter'].includes(key)) {
-        event.preventDefault()
-      }
+      if (epkOpen || isAdminPreview || hallOverlay || bookingForm) return
+      if (shouldIgnoreGameKeyboard(event)) return
 
-      if (dialogueNode && key === 'enter') {
-        return
-      }
+      const key = event.key.toLowerCase()
+      const isMovementKey = ['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd', 'enter'].includes(
+        key
+      )
+      if (!isMovementKey) return
+
+      if (dialogueNode && key === 'enter') return
+
+      event.preventDefault()
 
       if (key === 'arrowup' || key === 'w') movePlayer(0, -stepAmount)
       if (key === 'arrowdown' || key === 's') movePlayer(0, stepAmount)
@@ -1053,7 +1066,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [step, nearbyLocation, dialogueNode, epkOpen])
+  }, [step, nearbyLocation, dialogueNode, epkOpen, isAdminPreview, hallOverlay, bookingForm])
 
   const activeCharacterSprites = guildCharacterSprites[guild] || guildCharacterSprites['Water Guild']
 
