@@ -24,7 +24,45 @@ import {
 
 const guilds = ['Fire Guild', 'Water Guild', 'Earth Guild', 'Air Guild']
 const saveKey = 'gms-cyber-hall-profile'
+const SOUND_ENABLED_STORAGE_KEY = 'gms-sound-enabled'
 const stepAmount = 2.5
+
+function readSoundEnabledPreference() {
+  if (typeof window === 'undefined') return true
+  const stored = localStorage.getItem(SOUND_ENABLED_STORAGE_KEY)
+  if (stored === '0') return false
+  if (stored === '1') return true
+  return true
+}
+
+function SoundToggleButton({ enabled, onToggle }) {
+  return (
+    <button
+      type="button"
+      className="sound-toggle-btn"
+      onClick={onToggle}
+      aria-label={enabled ? 'Turn sound off' : 'Turn sound on'}
+      aria-pressed={!enabled}
+      title={enabled ? 'Sound on' : 'Sound off'}
+    >
+      <span className="sound-toggle-icon" aria-hidden="true">
+        {enabled ? (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+            <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+            <path d="M18 6a8.5 8.5 0 0 1 0 12" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+            <path d="m22 9-6 6" />
+            <path d="m16 9 6 6" />
+          </svg>
+        )}
+      </span>
+    </button>
+  )
+}
 
 const TEMPLE_SHOP_MAP_KEYS = new Set([
   'hall',
@@ -556,6 +594,7 @@ function App() {
   const [characterDirection, setCharacterDirection] = useState('down')
   const [characterMoving, setCharacterMoving] = useState(false)
   const [backgroundMusicUnlocked, setBackgroundMusicUnlocked] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(() => readSoundEnabledPreference())
   const [epkOpen, setEpkOpen] = useState(false)
   const [isMobileMapView, setIsMobileMapView] = useState(false)
   const [mapCameraViewportSize, setMapCameraViewportSize] = useState({ w: 0, h: 0 })
@@ -564,6 +603,7 @@ function App() {
   const clickAudioRef = useRef(null)
   const welcomeAudioRef = useRef(null)
   const backgroundMusicRef = useRef(null)
+  const soundEnabledRef = useRef(soundEnabled)
   const movementTimeoutRef = useRef(null)
   const backgroundMusicTimesRef = useRef({})
   const activeSoundtrackKeyRef = useRef('overworld')
@@ -632,7 +672,7 @@ function App() {
 
     audioRef.current.load()
 
-    if (shouldAutoplayOnTrackChangeRef.current) {
+    if (shouldAutoplayOnTrackChangeRef.current && soundEnabledRef.current) {
       audioRef.current.play()
         .then(() => setIsTrackPlaying(true))
         .catch(() => {
@@ -652,6 +692,11 @@ function App() {
   }
 
   const togglePreview = () => {
+    if (!soundEnabled) {
+      setPlayerMessage('Turn sound on (top right) to play tracks.')
+      return
+    }
+
     if (!activeTrack?.audioUrl || trackUnavailable) {
       setPlayerMessage('Track unavailable — check R2 file URL.')
       return
@@ -674,20 +719,26 @@ function App() {
   }
 
   const handleBeginOnboarding = () => {
-    if (welcomeAudioRef.current) {
+    if (soundEnabledRef.current && welcomeAudioRef.current) {
       welcomeAudioRef.current.currentTime = 0
       welcomeAudioRef.current.play().catch(() => {})
     }
-    if (backgroundMusicRef.current) {
+    if (soundEnabledRef.current && backgroundMusicRef.current) {
       backgroundMusicRef.current.play().catch(() => {})
     }
     setStep(2)
   }
   const unlockBackgroundMusic = () => {
     if (backgroundMusicUnlocked || !backgroundMusicRef.current) return
-  
+
     setBackgroundMusicUnlocked(true)
-    backgroundMusicRef.current.play().catch(() => {})
+    if (soundEnabledRef.current) {
+      backgroundMusicRef.current.play().catch(() => {})
+    }
+  }
+
+  const toggleSoundEnabled = () => {
+    setSoundEnabled((prev) => !prev)
   }
   const movePlayer = (dx, dy) => {
     unlockBackgroundMusic()
@@ -1017,8 +1068,9 @@ function App() {
     backgroundMusicRef.current.preload = 'auto'
 
     const handleGlobalClickSound = (event) => {
+      if (!soundEnabledRef.current) return
       const clickTarget = event.target.closest('button, a, [role="button"]')
-      if (!clickTarget || !clickAudioRef.current) return
+      if (!clickTarget || clickTarget.closest('.sound-toggle-btn') || !clickAudioRef.current) return
       clickAudioRef.current.currentTime = 0
       clickAudioRef.current.play().catch(() => {})
     }
@@ -1033,6 +1085,37 @@ function App() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SOUND_ENABLED_STORAGE_KEY, soundEnabled ? '1' : '0')
+    }
+
+    const applyMute = (audio) => {
+      if (audio) audio.muted = !soundEnabled
+    }
+
+    applyMute(clickAudioRef.current)
+    applyMute(welcomeAudioRef.current)
+    applyMute(backgroundMusicRef.current)
+    applyMute(audioRef.current)
+
+    if (!soundEnabled) {
+      backgroundMusicRef.current?.pause()
+      welcomeAudioRef.current?.pause()
+      audioRef.current?.pause()
+      return
+    }
+
+    const shouldPauseForMediaPlayback = hallOverlay === 'music' && isTrackPlaying
+    if (step === 4 && backgroundMusicUnlocked && !shouldPauseForMediaPlayback) {
+      backgroundMusicRef.current?.play().catch(() => {})
+    }
+    if (hallOverlay === 'music' && isTrackPlaying) {
+      audioRef.current?.play().catch(() => {})
+    }
+  }, [soundEnabled, step, backgroundMusicUnlocked, hallOverlay, isTrackPlaying])
 
   useEffect(() => {
     if (!backgroundMusicRef.current) return
@@ -1063,10 +1146,10 @@ function App() {
       return
     }
   
-    if (step === 4 && backgroundMusicUnlocked) {
+    if (step === 4 && backgroundMusicUnlocked && soundEnabled) {
       backgroundMusicRef.current.play().catch(() => {})
     }
-  }, [currentMap, hallOverlay, isTrackPlaying, step, backgroundMusicUnlocked])
+  }, [currentMap, hallOverlay, isTrackPlaying, step, backgroundMusicUnlocked, soundEnabled])
 
 
   useEffect(() => {
@@ -1209,6 +1292,8 @@ function App() {
 
   return (
     <div className={`app-shell arcade-screen ${step < 4 ? 'onboarding-mode' : ''}`}>
+      <SoundToggleButton enabled={soundEnabled} onToggle={toggleSoundEnabled} />
+
       {step === 4 && (
         <div className="site-header-stack">
           <header className="game-title-banner" aria-label="The Great Medicine Show">
@@ -1674,6 +1759,7 @@ function App() {
                     <audio
                       ref={audioRef}
                       controls
+                      muted={!soundEnabled}
                       src={activeTrack.audioUrl}
                       onError={() => {
                         setTrackUnavailable(true)
