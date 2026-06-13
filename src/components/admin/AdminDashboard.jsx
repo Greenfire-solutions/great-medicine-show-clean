@@ -137,6 +137,24 @@ function emptyCodeContainer() {
   }
 }
 
+function emptyBeatLabFolder() {
+  return {
+    id: `beat-folder-${crypto.randomUUID()}`,
+    title: '',
+    description: '',
+    requiresCode: false,
+    driveUrl: '',
+    code: '',
+    unlockedTitle: '',
+    unlockedDescription: '',
+    unlockedUrl: '',
+    buttonText: 'Open Folder',
+    image: '',
+    hidden: false,
+    sortOrder: 0
+  }
+}
+
 function AdminLogin({ onSuccess }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -211,6 +229,7 @@ export default function AdminDashboard() {
   const shows = drafts.shows?.upcomingShows || []
   const booking = drafts.booking?.bookingOffers || []
   const codes = drafts.downloadCodes?.downloadCodeContainers || []
+  const beatLabFolders = drafts.beatLab?.folders || []
 
   const templeGrouped = useMemo(() => {
     const groups = {}
@@ -724,6 +743,83 @@ export default function AdminDashboard() {
     )
   }
 
+  const renderBeatLabEditor = () => {
+    const item = editing.item
+    return (
+      <div className="admin-form-grid">
+        <p className="small admin-field-wide">
+          Fire Temple → Beat Lab tab. Free folders use <strong>driveUrl</strong>. Locked folders use{' '}
+          <strong>code</strong> + <strong>unlockedUrl</strong> (Google Drive).
+        </p>
+        <label className="admin-field">
+          <span>ID</span>
+          <input value={item.id} onChange={(e) => updateEditing('id', e.target.value)} />
+        </label>
+        <label className="admin-field">
+          <span>Folder title</span>
+          <input value={item.title} onChange={(e) => updateEditing('title', e.target.value)} />
+        </label>
+        <label className="admin-field admin-field-wide">
+          <span>Description</span>
+          <textarea rows={2} value={item.description} onChange={(e) => updateEditing('description', e.target.value)} />
+        </label>
+        <label className="admin-field admin-field-wide">
+          <span>Image URL</span>
+          <input value={item.image} onChange={(e) => updateEditing('image', e.target.value)} />
+        </label>
+        <label className="admin-field">
+          <span>Button text</span>
+          <input value={item.buttonText} onChange={(e) => updateEditing('buttonText', e.target.value)} />
+        </label>
+        <label className="admin-field">
+          <span>Sort order</span>
+          <input
+            type="number"
+            value={item.sortOrder ?? 0}
+            onChange={(e) => updateEditing('sortOrder', Number(e.target.value))}
+          />
+        </label>
+        <div className="admin-checkbox-row admin-field-wide">
+          <CheckboxField
+            label="Requires access code (Beat Lab locked folder)"
+            checked={item.requiresCode}
+            onChange={(v) => updateEditing('requiresCode', v)}
+          />
+          <CheckboxField label="Hidden" checked={item.hidden} onChange={(v) => updateEditing('hidden', v)} />
+        </div>
+        {!item.requiresCode ? (
+          <label className="admin-field admin-field-wide">
+            <span>Google Drive URL (Free Beats — no code)</span>
+            <input value={item.driveUrl} onChange={(e) => updateEditing('driveUrl', e.target.value)} />
+          </label>
+        ) : (
+          <>
+            <label className="admin-field">
+              <span>Access code</span>
+              <input value={item.code} onChange={(e) => updateEditing('code', e.target.value)} />
+            </label>
+            <label className="admin-field admin-field-wide">
+              <span>Unlocked Google Drive URL</span>
+              <input value={item.unlockedUrl} onChange={(e) => updateEditing('unlockedUrl', e.target.value)} />
+            </label>
+            <label className="admin-field admin-field-wide">
+              <span>Unlocked title</span>
+              <input value={item.unlockedTitle} onChange={(e) => updateEditing('unlockedTitle', e.target.value)} />
+            </label>
+            <label className="admin-field admin-field-wide">
+              <span>Unlocked description</span>
+              <textarea
+                rows={2}
+                value={item.unlockedDescription}
+                onChange={(e) => updateEditing('unlockedDescription', e.target.value)}
+              />
+            </label>
+          </>
+        )}
+      </div>
+    )
+  }
+
   if (!authed) {
     return (
       <div className="admin-dashboard-backdrop">
@@ -862,6 +958,20 @@ export default function AdminDashboard() {
             {renderList('downloadCodes', codes, (i) => i.title)}
           </>
         )}
+        {tab === 'beatLab' && (
+          <>
+            <div className="admin-toolbar">
+              <button type="button" className="arcade-button" onClick={() => startEdit('beatLab', emptyBeatLabFolder(), null)}>
+                Add Beat Lab folder
+              </button>
+              <button type="button" className="arcade-button admin-publish-btn" disabled={saving} onClick={() => handleSaveTab('beatLab')}>
+                {saving ? 'Publishing…' : 'Publish Beat Lab to live site'}
+              </button>
+            </div>
+            <p className="small">Shown in Fire Temple → Beat Lab tab. Use &quot;Free Beats&quot; (no code) and &quot;Beat Lab&quot; (code required).</p>
+            {renderList('beatLab', beatLabFolders, (i) => `${i.title}${i.requiresCode ? ' (code)' : ' (free)'}`)}
+          </>
+        )}
         {tab === 'temples' && (
           <section>
             <p className="small">Products by temple. Edit in the Products tab, then save to GitHub.</p>
@@ -891,6 +1001,7 @@ export default function AdminDashboard() {
             {editing.fileKey === 'shows' && renderShowEditor()}
             {editing.fileKey === 'booking' && renderBookingEditor()}
             {editing.fileKey === 'downloadCodes' && renderCodeEditor()}
+            {editing.fileKey === 'beatLab' && renderBeatLabEditor()}
             {validationError && <p className="admin-error">{validationError}</p>}
             {pendingDelete ? (
               <div className="admin-confirm">

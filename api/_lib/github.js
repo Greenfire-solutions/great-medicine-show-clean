@@ -3,7 +3,8 @@ const ALLOWED_PATHS = {
   courses: 'src/data/coursesData.json',
   shows: 'src/data/showsData.json',
   booking: 'src/data/bookingOffersData.json',
-  downloadCodes: 'src/data/downloadCodesData.json'
+  downloadCodes: 'src/data/downloadCodesData.json',
+  beatLab: 'src/data/beatLabData.json'
 }
 
 function getGithubConfig() {

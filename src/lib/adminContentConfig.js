@@ -3,6 +3,7 @@ import coursesJson from '../data/coursesData.json'
 import showsJson from '../data/showsData.json'
 import bookingJson from '../data/bookingOffersData.json'
 import codesJson from '../data/downloadCodesData.json'
+import beatLabJson from '../data/beatLabData.json'
 
 /** Maps admin tab keys to GitHub JSON paths and root property names. */
 export const ADMIN_CONTENT_FILES = {
@@ -40,7 +41,14 @@ export const ADMIN_CONTENT_FILES = {
     dataKey: 'downloadCodeContainers',
     label: 'Code Unlocks',
     getInitial: () => structuredClone(codesJson)
+  },
+  beatLab: {
+    fileKey: 'beatLab',
+    githubPath: 'src/data/beatLabData.json',
+    dataKey: 'folders',
+    label: 'Beat Lab',
+    getInitial: () => structuredClone(beatLabJson)
   }
 }
 
-export const ADMIN_TAB_ORDER = ['store', 'courses', 'shows', 'booking', 'downloadCodes', 'temples']
+export const ADMIN_TAB_ORDER = ['store', 'courses', 'shows', 'booking', 'downloadCodes', 'beatLab', 'temples']

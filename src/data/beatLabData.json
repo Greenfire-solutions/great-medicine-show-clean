@@ -1,0 +1,29 @@
+{
+  "folders": [
+    {
+      "id": "free-beats",
+      "title": "Free Beats",
+      "description": "Free beat downloads — open the folder anytime, no code required.",
+      "requiresCode": false,
+      "driveUrl": "https://drive.google.com/",
+      "buttonText": "Open Free Beats Folder",
+      "image": "https://placehold.co/320x220/2a2d1f/d9f5aa?text=Free+Beats",
+      "hidden": false,
+      "sortOrder": 1
+    },
+    {
+      "id": "beat-lab",
+      "title": "Beat Lab",
+      "description": "Licensed beats and exclusive packs. Enter your access code from email after purchase.",
+      "requiresCode": true,
+      "code": "BEAT-LAB",
+      "unlockedTitle": "Beat Lab — Google Drive",
+      "unlockedDescription": "Your full Beat Lab library. Save copies to your device.",
+      "unlockedUrl": "https://drive.google.com/",
+      "buttonText": "Open Beat Lab Folder",
+      "image": "https://placehold.co/320x220/3a1f1f/ffd3b5?text=Beat+Lab",
+      "hidden": false,
+      "sortOrder": 2
+    }
+  ]
+}

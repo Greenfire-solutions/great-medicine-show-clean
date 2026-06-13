@@ -5,6 +5,8 @@ import { courses } from './data/coursesData'
 import { getCodeContainersByTemple } from './data/downloadCodesData'
 import { bookingOffers, upcomingShows } from './data/showsData'
 import AdminDashboard from './components/admin/AdminDashboard'
+import BeatLabPanel from './components/BeatLabPanel'
+import { beatLabFolders } from './data/beatLabData'
 import {
   getItemDisplayName,
   getItemUrl,
@@ -239,6 +241,16 @@ const mapDefinitions = {
     title: 'Fire Temple Interior',
     nodes: [
       { id: 'fire-quest', name: 'Fire Projects / Quests Placeholder', x: 48, y: 42, tone: 'fire', type: 'quest' },
+      {
+        id: 'beat-lab',
+        name: 'Beat Lab',
+        x: 78,
+        y: 38,
+        tone: 'fire',
+        type: 'beatLab',
+        prompt: 'Open Beat Lab?',
+        actionLabel: 'Open Beat Lab'
+      },
       { id: 'fire-exit', name: 'Back to Overworld Exit', x: 76, y: 80, tone: 'exit', type: 'map', targetMap: 'overworld' }
     ]
   },
@@ -439,12 +451,16 @@ function CodeUnlockCard({ container }) {
   )
 }
 
-function TempleVaultPanel({ templeKey, products, codeContainers, onInquire }) {
+function TempleVaultPanel({ templeKey, products, codeContainers, onInquire, embedded = false }) {
   const title = TEMPLE_VAULT_TITLES[templeKey] || 'Temple Vault'
   const hasContent = products.length > 0 || codeContainers.length > 0
+  const Wrapper = embedded ? 'div' : 'article'
+  const wrapperClass = embedded
+    ? 'temple-vault-embedded'
+    : 'arcade-panel section-panel temple-shop-panel'
 
   return (
-    <article className="arcade-panel section-panel temple-shop-panel">
+    <Wrapper className={wrapperClass}>
       <h3 className="glyph-title">{title}</h3>
       <p className="small">Offerings and downloads for this location.</p>
       <div className="glowing-divider" />
@@ -472,6 +488,40 @@ function TempleVaultPanel({ templeKey, products, codeContainers, onInquire }) {
           )}
         </>
       )}
+    </Wrapper>
+  )
+}
+
+function FireTempleSidePanel({ tab, setTab, products, codeContainers, folders, onInquire }) {
+  return (
+    <article className="arcade-panel section-panel fire-temple-side-panel">
+      <nav className="temple-side-tabs" aria-label="Fire Temple sections">
+        <button
+          type="button"
+          className={`arcade-button temple-side-tab ${tab === 'vault' ? 'active' : ''}`}
+          onClick={() => setTab('vault')}
+        >
+          Temple Vault
+        </button>
+        <button
+          type="button"
+          className={`arcade-button temple-side-tab ${tab === 'beatLab' ? 'active' : ''}`}
+          onClick={() => setTab('beatLab')}
+        >
+          Beat Lab
+        </button>
+      </nav>
+      {tab === 'vault' ? (
+        <TempleVaultPanel
+          embedded
+          templeKey="fireTemple"
+          products={products}
+          codeContainers={codeContainers}
+          onInquire={onInquire}
+        />
+      ) : (
+        <BeatLabPanel folders={folders} />
+      )}
     </article>
   )
 }
@@ -486,6 +536,7 @@ function App() {
   const [playerPosition, setPlayerPosition] = useState({ x: 50, y: 52 })
   const [dialogueNode, setDialogueNode] = useState(null)
   const [navOpen, setNavOpen] = useState(false)
+  const [fireTemplePanelTab, setFireTemplePanelTab] = useState('vault')
   const [hallOverlay, setHallOverlay] = useState(null)
   const [activeTrackIndex, setActiveTrackIndex] = useState(0)
   const [playerMessage, setPlayerMessage] = useState('')
@@ -740,6 +791,16 @@ function App() {
   const navigateToNode = (node) => {
     if (!node) return
 
+    if (node.type === 'beatLab' || node.id === 'beat-lab') {
+      if (currentMap !== 'fireTemple') {
+        setCurrentMap('fireTemple')
+        setPlayerPosition({ x: 50, y: 52 })
+      }
+      setFireTemplePanelTab('beatLab')
+      setActiveSection(node.name)
+      return
+    }
+
     if (node.type === 'map' && node.targetMap) {
       setHallOverlay(null)
       setCurrentMap(node.targetMap)
@@ -785,6 +846,13 @@ function App() {
       setActiveSection(node.name)
     }
 
+    if (action === 'view' && node.type === 'beatLab') {
+      setFireTemplePanelTab('beatLab')
+      setActiveSection(node.name)
+      closeDialogue()
+      return
+    }
+
     if (action === 'view') {
       const overlay = openHallOverlayByNodeId(node.id)
       if (overlay) {
@@ -813,7 +881,8 @@ function App() {
       shows: { primary: 'View Shows', secondary: 'Book Now' },
       'course-link': { primary: 'View Courses' },
       'course-board': { primary: 'View Courses' },
-      course: { primary: 'View Courses' }
+      course: { primary: 'View Courses' },
+      'beat-lab': { primary: 'Open Beat Lab' }
     }
 
     return actionMap[node.id] || { primary: node.actionLabel || 'View page' }
@@ -999,6 +1068,10 @@ function App() {
     }
   }, [currentMap, hallOverlay, isTrackPlaying, step, backgroundMusicUnlocked])
 
+
+  useEffect(() => {
+    if (currentMap !== 'fireTemple') setFireTemplePanelTab('vault')
+  }, [currentMap])
 
   useEffect(() => {
     if (!epkOpen) return
@@ -1546,7 +1619,16 @@ function App() {
                 )}
             </div>
 
-            {TEMPLE_SHOP_MAP_KEYS.has(currentMap) ? (
+            {currentMap === 'fireTemple' ? (
+              <FireTempleSidePanel
+                tab={fireTemplePanelTab}
+                setTab={setFireTemplePanelTab}
+                products={templeVaultProducts}
+                codeContainers={templeVaultCodes}
+                folders={beatLabFolders}
+                onInquire={openStoreProductInquiry}
+              />
+            ) : TEMPLE_SHOP_MAP_KEYS.has(currentMap) ? (
               <TempleVaultPanel
                 templeKey={currentMap}
                 products={templeVaultProducts}
